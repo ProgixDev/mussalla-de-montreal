@@ -22,6 +22,7 @@
   --gold: #d9bd77; /* on dark: accents, labels, emblem */
   --gold-deep: #c9a24b; /* on light: tile hover border, key figures */
   --gold-strong: #b8933a; /* pattern strokes */
+  --gold-light: #ecd9a0; /* luminous highlight — nur / sheen / lamp glow */
 
   /* Creams & sand */
   --cream: #f7f1e5; /* main page / card cream */
@@ -53,6 +54,7 @@
     0 14px 40px -8px rgba(20, 21, 15, 0.28), 0 4px 12px -4px rgba(20, 21, 15, 0.12);
   --shadow-lift: 0 16px 34px -16px rgba(10, 28, 21, 0.42);
   --shadow-modal: 0 24px 60px -12px rgba(20, 21, 15, 0.45);
+  --shadow-lamp: 0 0 70px -14px rgba(217, 189, 119, 0.5); /* nur / lantern glow */
 }
 
 @theme inline {
@@ -68,6 +70,7 @@
   --color-gold: var(--gold);
   --color-gold-deep: var(--gold-deep);
   --color-gold-strong: var(--gold-strong);
+  --color-gold-light: var(--gold-light);
   --color-cream: var(--cream);
   --color-cream-tv: var(--cream-tv);
   --color-cream-2: var(--cream-2);
@@ -95,6 +98,7 @@
   --shadow-frame: var(--shadow-frame);
   --shadow-lift: var(--shadow-lift);
   --shadow-modal: var(--shadow-modal);
+  --shadow-lamp: var(--shadow-lamp);
 
   /* Entry / ambient animations */
   --animate-tvfade: tvfade 0.5s ease both;
@@ -103,6 +107,17 @@
   --animate-floaty: floaty 6s ease-in-out infinite;
   --animate-livepulse: livepulse 2s ease-in-out infinite;
   --animate-modalin: modalin 0.25s ease both;
+
+  /* Islamic motif system — friendly, calm ornamental motion */
+  --animate-starbloom: starbloom 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-twinkle: twinkle 4s ease-in-out infinite;
+  --animate-lanternsway: lanternsway 5.5s ease-in-out infinite;
+  --animate-glow: glowpulse 4.5s ease-in-out infinite;
+  --animate-spinslow: spinslow 90s linear infinite;
+  --animate-drawin: drawin 1.6s ease both;
+  /* Opacity-only reveal — the ONLY motion allowed on sacred Arabic (basmala / du'a):
+     the Name of Allah is never scaled, rotated, or clipped. */
+  --animate-softfade: softfade 1s ease both;
 }
 
 @keyframes tvfade {
@@ -162,6 +177,80 @@
   }
 }
 
+/* ── Islamic motif system ─────────────────────────────────────── */
+/* A khatam star that blooms open — for the basmala, medallions, seals. */
+@keyframes starbloom {
+  from {
+    opacity: 0;
+    transform: scale(0.55) rotate(-30deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+/* Scattered stars breathing like lamplight. */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+/* A hanging lantern rocking gently (transform-origin set at the anchor). */
+@keyframes lanternsway {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+/* Nur — a soft halo breathing around a light source. */
+@keyframes glowpulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+/* A very slow rotation for large geometric medallions. */
+@keyframes spinslow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Line-art drawing itself on (pair with stroke-dasharray on the path). */
+@keyframes drawin {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+/* Dignified opacity-only reveal for sacred Arabic — no transform, ever. */
+@keyframes softfade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* A diagonal light sweep across gold surfaces. */
+@keyframes sheen {
+  0% {
+    transform: translateX(-160%) skewX(-18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(260%) skewX(-18deg);
+  }
+}
+
 @layer base {
   * {
     border-color: var(--hairline);
@@ -200,6 +289,25 @@
   /* Tabular figures for money/clocks so digits don't jitter as they update. */
   .nums {
     font-variant-numeric: tabular-nums;
+  }
+  /* Gold surfaces catch a slow diagonal light sweep (nur). Parent clips it. */
+  .sheen {
+    position: relative;
+    overflow: hidden;
+  }
+  .sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 70%
+    );
+    transform: translateX(-160%) skewX(-18deg);
+    animation: sheen 6s ease-in-out 1.2s infinite;
+    pointer-events: none;
   }
 }
 

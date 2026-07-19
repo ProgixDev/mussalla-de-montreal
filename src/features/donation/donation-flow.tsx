@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Emblem } from "@/components/ui/emblem";
+import { SiteHeader } from "@/components/site-header";
 import { ArrowLeftIcon, CheckIcon } from "@/components/ui/icons";
 import { formatCAD } from "@/lib/format";
 import { useDonationStore } from "./provider";
@@ -40,13 +39,10 @@ export function DonationFlow({ goals }: { goals: { id: string; title: string }[]
       : "Continuer";
 
   return (
-    <main className="flex min-h-dvh flex-col items-center bg-sand px-4 py-8 md:py-12">
-      <Link href="/" className="mb-6 flex items-center gap-2.5">
-        <Emblem size={30} className="text-emerald" />
-        <span className="font-display text-[17px] text-ink">Mussalla de Montréal</span>
-      </Link>
-
-      <div className="flex w-full max-w-[480px] flex-col overflow-hidden rounded-[16px] border border-hairline bg-cream shadow-frame">
+    <div className="flex min-h-dvh flex-col bg-sand">
+      <SiteHeader />
+      <main className="flex flex-1 flex-col items-center px-4 py-8 md:py-12">
+        <div className="flex w-full max-w-[480px] flex-col overflow-hidden rounded-[16px] border border-hairline bg-cream shadow-frame">
         {/* Header */}
         <header className="border-b border-hairline px-6 py-4">
           {!isReceipt ? (
@@ -106,8 +102,9 @@ export function DonationFlow({ goals }: { goals: { id: string; title: string }[]
             {primaryLabel}
           </button>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   );
 }
 

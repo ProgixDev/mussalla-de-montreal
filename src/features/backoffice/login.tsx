@@ -1,6 +1,7 @@
 "use client";
 
 import { Emblem } from "@/components/ui/emblem";
+import { SiteHeader } from "@/components/site-header";
 import { useBackoffice } from "./provider";
 
 /**
@@ -16,14 +17,16 @@ export function Login() {
   const login = useBackoffice((s) => s.login);
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-sand px-5">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          login();
-        }}
-        className="w-full max-w-[380px] rounded-[8px] border border-hairline bg-cream p-8 shadow-frame"
-      >
+    <div className="flex min-h-dvh flex-col bg-sand">
+      <SiteHeader />
+      <main className="flex flex-1 items-center justify-center px-5 py-10">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            login();
+          }}
+          className="w-full max-w-[380px] rounded-[8px] border border-hairline bg-cream p-8 shadow-frame"
+        >
         <div className="flex flex-col items-center text-center">
           <Emblem size={48} className="text-emerald" />
           <h1 className="font-display mt-4 text-[28px] text-ink">Backoffice</h1>
@@ -59,7 +62,8 @@ export function Login() {
             Se connecter
           </button>
         </div>
-      </form>
-    </main>
+        </form>
+      </main>
+    </div>
   );
 }
