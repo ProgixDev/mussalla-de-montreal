@@ -1,0 +1,214 @@
+@import "tailwindcss";
+
+/*
+ * Mussalla de Montréal — « La caisse »
+ * Design system (Tailwind v4 CSS-first). Tokens transcribed 1:1 from the design
+ * handoff (mussala-design-montreal/.../README.md → Design Tokens). The calm mosque
+ * aesthetic: emerald + gold + cream. These are the only colors features may use.
+ */
+
+:root {
+  /* Emerald family */
+  --emerald: #0f5a40; /* primary: buttons, links, active, progress start */
+  --emerald-deep: #0a3e2c; /* pressed */
+  --emerald-focus: #15805e; /* input focus border */
+  --emerald-fill: #1c7d5b; /* progress gradient end */
+  --emerald-mid: #1a6b50; /* mosque silhouette on dark */
+  --night: #0a1c15; /* darkest emerald: nav, live badge, deep tiles */
+  --ink: #0e231b; /* headings / body on light; dark cards */
+  --card-dark: #173a2d; /* dark cards on dark surfaces */
+
+  /* Gold family */
+  --gold: #d9bd77; /* on dark: accents, labels, emblem */
+  --gold-deep: #c9a24b; /* on light: tile hover border, key figures */
+  --gold-strong: #b8933a; /* pattern strokes */
+
+  /* Creams & sand */
+  --cream: #f7f1e5; /* main page / card cream */
+  --cream-tv: #f7f0e2; /* TV screen ground */
+  --cream-2: #efe6d4; /* secondary cream (sidebar) */
+  --sand: #e3dac6; /* outer backdrop behind device frames */
+
+  /* Text on light */
+  --body: #2b3b33; /* secondary body */
+  --muted-ink: #6c7a70; /* muted body / captions */
+  --faint: #9aa79c; /* fine print, uppercase micro-labels */
+
+  /* Text on dark */
+  --on-dark: #f4eddd;
+  --on-dark-muted: #cabfa6;
+  --on-dark-faint: #8b9486;
+
+  /* Surfaces & lines */
+  --tint: #eaf1ea; /* selected chip / icon-tile bg */
+  --hairline: #e5dbc4; /* 1px borders on light */
+  --hairline-strong: #d2c6a8; /* input borders */
+  --hairline-dark: #24392f; /* borders on dark */
+  --row-divider: #ece2cd; /* list row bottoms */
+  --error: #b4462f;
+
+  /* Shadows */
+  --shadow-hero: 0 26px 60px -24px rgba(10, 28, 21, 0.55);
+  --shadow-frame:
+    0 14px 40px -8px rgba(20, 21, 15, 0.28), 0 4px 12px -4px rgba(20, 21, 15, 0.12);
+  --shadow-lift: 0 16px 34px -16px rgba(10, 28, 21, 0.42);
+  --shadow-modal: 0 24px 60px -12px rgba(20, 21, 15, 0.45);
+}
+
+@theme inline {
+  /* Colors → utilities (bg-emerald, text-gold, border-hairline, …) */
+  --color-emerald: var(--emerald);
+  --color-emerald-deep: var(--emerald-deep);
+  --color-emerald-focus: var(--emerald-focus);
+  --color-emerald-fill: var(--emerald-fill);
+  --color-emerald-mid: var(--emerald-mid);
+  --color-night: var(--night);
+  --color-ink: var(--ink);
+  --color-card-dark: var(--card-dark);
+  --color-gold: var(--gold);
+  --color-gold-deep: var(--gold-deep);
+  --color-gold-strong: var(--gold-strong);
+  --color-cream: var(--cream);
+  --color-cream-tv: var(--cream-tv);
+  --color-cream-2: var(--cream-2);
+  --color-sand: var(--sand);
+  --color-body: var(--body);
+  --color-muted-ink: var(--muted-ink);
+  --color-faint: var(--faint);
+  --color-on-dark: var(--on-dark);
+  --color-on-dark-muted: var(--on-dark-muted);
+  --color-on-dark-faint: var(--on-dark-faint);
+  --color-tint: var(--tint);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-hairline-dark: var(--hairline-dark);
+  --color-row-divider: var(--row-divider);
+  --color-error: var(--error);
+
+  /* Fonts (variables injected by next/font in layout.tsx) */
+  --font-display: var(--font-marcellus), Georgia, serif;
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-arabic: var(--font-amiri), serif;
+
+  /* Named shadows → shadow-hero, shadow-frame, shadow-lift, shadow-modal */
+  --shadow-hero: var(--shadow-hero);
+  --shadow-frame: var(--shadow-frame);
+  --shadow-lift: var(--shadow-lift);
+  --shadow-modal: var(--shadow-modal);
+
+  /* Entry / ambient animations */
+  --animate-tvfade: tvfade 0.5s ease both;
+  --animate-rise: rise 0.7s ease both;
+  --animate-growbar: growbar 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-floaty: floaty 6s ease-in-out infinite;
+  --animate-livepulse: livepulse 2s ease-in-out infinite;
+  --animate-modalin: modalin 0.25s ease both;
+}
+
+@keyframes tvfade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes growbar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+@keyframes livepulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+@keyframes modalin {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--hairline);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--emerald) 22%, transparent);
+  }
+}
+
+@layer utilities {
+  /* Uppercase micro-label used throughout the design (10–12px, wide tracking). */
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.012em;
+  }
+  .font-arabic {
+    font-family: var(--font-arabic);
+    direction: rtl;
+  }
+  /* Tabular figures for money/clocks so digits don't jitter as they update. */
+  .nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
