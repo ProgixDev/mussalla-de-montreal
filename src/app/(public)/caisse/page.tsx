@@ -18,9 +18,15 @@ export const metadata: Metadata = {
 };
 
 /**
- * Vue téléphone — the public live board a QR scan opens. Mobile-first (the phone is
- * the frame). On desktop it sits beside an explanatory panel + QR so the page fills
- * the width instead of floating as a lone column. Read-only; the real name behind an
+ * Vue téléphone — the public live board a QR scan opens.
+ *
+ * The two breakpoints serve different people, so they show different things:
+ *  - Phone: the board itself. This is the destination of the TV's QR code.
+ *  - Desktop: an explanation and a large QR to scan. A laptop-sized replica of a
+ *    phone board helped nobody; whoever is at a desk wants the code that moves the
+ *    board to their pocket.
+ *
+ * Read-only — there is no donation path on the site, and the real name behind an
  * anonymous gift is never shown here.
  */
 export default function CaissePage() {
@@ -31,7 +37,9 @@ export default function CaissePage() {
     <main className="relative min-h-dvh overflow-hidden bg-sand">
       {/* Girih star-field ground — the quiet geometry under the whole board. */}
       <Girih id="girih-caisse" opacity={0.16} color="var(--gold-strong)" />
-      <div className="relative mx-auto grid w-full max-w-[1080px] gap-8 px-4 py-8 md:px-8 md:py-12 lg:grid-cols-[1fr_minmax(0,420px)] lg:items-start">
+      {/* Desktop lost the tall board, so the two columns are centred in the viewport
+          rather than stranded at the top of an empty page. */}
+      <div className="relative mx-auto grid w-full max-w-[1080px] gap-8 px-4 py-8 md:px-8 md:py-12 lg:min-h-[calc(100dvh-9rem)] lg:grid-cols-[1fr_minmax(0,420px)] lg:items-center">
         {/* Side panel (desktop): explains the phone/QR nature. */}
         <aside className="animate-rise order-2 lg:order-1 lg:pt-6" style={{ animationDelay: "0.06s" }}>
           <p className="eyebrow text-gold-ink">Vue téléphone · public</p>
@@ -40,36 +48,51 @@ export default function CaissePage() {
           </h1>
           <Ornament className="mt-4 text-gold-deep" width={170} />
           <p className="mt-4 max-w-[420px] text-[16px] leading-relaxed text-muted-ink">
-            Ouvert en scannant le code QR de l’écran. On y voit la caisse en temps réel — et l’on
-            peut donner par carte en quelques secondes, au nom affiché ou de façon anonyme.
+            Ouvert en scannant le code QR de l’écran de la salle. On y voit la caisse en temps
+            réel : le solde, l’avancement de chaque objectif, et les dépenses, une par une.
           </p>
           <ul className="mt-5 space-y-2.5">
-            {["Paiement sécurisé par Square", "Don unique ou mensuel", "Reçu envoyé par courriel"].map(
-              (t) => (
-                <li key={t} className="flex items-center gap-2.5 text-[15px] text-body">
-                  <CheckIcon width={18} height={18} className="shrink-0 text-emerald" />
-                  {t}
-                </li>
-              ),
-            )}
+            {[
+              "Solde et objectifs en temps réel",
+              "Chaque dépense, avec sa date",
+              "Rien à installer — ça s’ouvre dans le navigateur",
+            ].map((t) => (
+              <li key={t} className="flex items-center gap-2.5 text-[15px] text-body">
+                <CheckIcon width={18} height={18} className="shrink-0 text-emerald" />
+                {t}
+              </li>
+            ))}
           </ul>
-          <div className="mt-7 hidden items-center gap-4 rounded-[8px] border border-gold-deep/25 bg-tint-warm p-4 lg:flex">
-            <div className="rounded-[6px] bg-white p-1">
-              <QrCode url={`${site.url}/caisse`} size={84} />
-            </div>
-            <div>
-              <p className="flex items-center gap-2 text-[13px] font-semibold text-ink">
-                <Star8 size={11} className="text-gold-deep" />
-                Scannez pour ouvrir
-              </p>
-              <p className="text-[12px] text-muted-ink">sur votre téléphone</p>
-            </div>
-          </div>
         </aside>
 
-        {/* The board (phone-shaped card), crowned by a pointed arch. */}
+        {/* Desktop: the scan invitation stands where the board preview used to sit. This
+            page is meant to be READ on a phone, so a full-size mirror of it on a laptop was
+            only ever decoration — the code that gets you there is the useful thing. */}
         <div
-          className="animate-rise order-1 mx-auto w-full max-w-[440px] lg:order-2"
+          className="animate-rise order-1 hidden lg:order-2 lg:block"
+          style={{ animationDelay: "0.14s" }}
+        >
+          <ArchCrown className="mx-auto -mb-3" width={190} />
+          {/* pt-12 keeps the white code panel clear of the arch's legs. */}
+          <div className="flex flex-col items-center rounded-[16px] border border-gold-deep/25 bg-tint-warm px-8 pt-12 pb-9 text-center shadow-frame">
+            <div className="rounded-[10px] bg-white p-4 shadow-lift">
+              <QrCode url={`${site.url}/caisse`} size={260} />
+            </div>
+            <p className="font-display mt-6 flex items-center gap-2 text-[20px] text-ink">
+              <Star8 size={13} className="text-gold-deep" />
+              Scannez pour ouvrir
+            </p>
+            <p className="mt-1.5 text-[15px] text-muted-ink">sur votre téléphone</p>
+            <p className="nums mt-4 border-t border-gold-deep/20 pt-4 text-[13px] text-faint">
+              {site.host}
+            </p>
+          </div>
+        </div>
+
+        {/* The board itself (phone-shaped card), crowned by a pointed arch. Phones only —
+            this is what a donor actually sees after scanning. */}
+        <div
+          className="animate-rise order-1 mx-auto w-full max-w-[440px] lg:hidden"
           style={{ animationDelay: "0.14s" }}
         >
           <ArchCrown className="mx-auto -mb-3" width={190} />
