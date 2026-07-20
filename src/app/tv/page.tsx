@@ -21,7 +21,12 @@ export default function TvPage() {
 
   return (
     <TvStoreProvider display={data.display}>
-      <TvScreen data={data} totals={totals} qr={<QrCode url={`${site.url}/caisse`} size={92} />} />
+      <TvScreen
+        data={data}
+        totals={totals}
+        qr={<QrCode url={`${site.url}/caisse`} size={92} />}
+        qrLabel={site.host}
+      />
     </TvStoreProvider>
   );
 }

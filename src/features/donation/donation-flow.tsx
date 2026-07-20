@@ -3,6 +3,10 @@
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { SiteHeader } from "@/components/site-header";
+import { Girih } from "@/components/ui/girih";
+import { Star8 } from "@/components/ui/star";
+import { Ornament } from "@/components/ui/ornament";
+import { ArchCrown } from "@/components/ui/arch";
 import { ArrowLeftIcon, CheckIcon } from "@/components/ui/icons";
 import { formatCAD } from "@/lib/format";
 import { useDonationStore } from "./provider";
@@ -39,9 +43,11 @@ export function DonationFlow({ goals }: { goals: { id: string; title: string }[]
       : "Continuer";
 
   return (
-    <div className="flex min-h-dvh flex-col bg-sand">
+    <div className="relative flex min-h-dvh flex-col overflow-hidden bg-sand">
+      <Girih id="girih-don" opacity={0.14} color="var(--gold-strong)" />
       <SiteHeader />
-      <main className="flex flex-1 flex-col items-center px-4 py-8 md:py-12">
+      <main className="relative flex flex-1 flex-col items-center px-4 py-8 md:py-12">
+        <ArchCrown className="mx-auto -mb-3" width={190} />
         <div className="flex w-full max-w-[480px] flex-col overflow-hidden rounded-[16px] border border-hairline bg-cream shadow-frame">
         {/* Header */}
         <header className="border-b border-hairline px-6 py-4">
@@ -177,7 +183,7 @@ function MontantStep() {
               className={cn(
                 "rounded-[2px] border py-4 text-[18px] font-semibold transition",
                 active
-                  ? "border-emerald bg-tint text-emerald"
+                  ? "border-emerald bg-tint-warm text-emerald shadow-lift"
                   : "border-hairline-strong bg-white text-ink hover:border-emerald/50",
               )}
             >
@@ -213,7 +219,7 @@ function DestinationStep({ destList }: { destList: { id: string; label: string }
               className={cn(
                 "flex w-full items-center justify-between gap-3 rounded-[4px] border px-4 py-3.5 text-left text-[15px] transition",
                 active
-                  ? "border-emerald bg-tint text-ink"
+                  ? "border-emerald bg-tint-warm text-ink"
                   : "border-hairline bg-white text-body hover:border-emerald/40",
               )}
             >
@@ -346,13 +352,23 @@ function RecuStep({
   const name = useDonationStore((s) => s.name);
   return (
     <div className="flex flex-col items-center pt-6 text-center">
-      <span className="flex size-16 items-center justify-center rounded-full bg-tint text-emerald">
-        <CheckIcon width={34} height={34} />
+      {/* Signature moment — the khatam star blooms open, lit from within. */}
+      <span className="relative flex size-24 items-center justify-center">
+        <span
+          aria-hidden="true"
+          className="animate-glow absolute inset-0 rounded-full"
+          style={{
+            background: "radial-gradient(circle, rgba(217,189,119,0.55), transparent 70%)",
+          }}
+        />
+        <Star8 size={84} className="animate-starbloom relative text-gold-deep" />
+        <CheckIcon width={26} height={26} className="absolute text-emerald" />
       </span>
       <h1 className="font-display mt-4 max-w-[280px] text-[26px] leading-tight text-ink">
         Merci · Qu’Allah vous récompense
       </h1>
-      <p className="mt-2 text-[15px] text-muted-ink">Votre don a bien été reçu.</p>
+      <Ornament className="mt-4 text-gold-deep" width={170} />
+      <p className="mt-3 text-[15px] text-muted-ink">Votre don a bien été reçu.</p>
 
       <div className="mt-6 w-full divide-y divide-row-divider rounded-[4px] border border-hairline bg-white px-4 py-1 text-left">
         <SummaryRow label="Montant" value={amountLabel} />

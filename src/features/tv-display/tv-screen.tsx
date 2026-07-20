@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, m } from "@/components/motion";
 import { Emblem } from "@/components/ui/emblem";
-import { Lattice } from "@/components/ui/lattice";
+import { Girih } from "@/components/ui/girih";
+import { Ornament } from "@/components/ui/ornament";
+import { Star8 } from "@/components/ui/star";
 import { MaximizeIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 import { TV_PAGES } from "@/core/data/derive";
@@ -22,10 +24,13 @@ export function TvScreen({
   data,
   totals,
   qr,
+  qrLabel,
 }: {
   data: CaisseData;
   totals: CaisseTotals;
   qr: React.ReactNode;
+  /** Host printed under the code — must name where the code actually points. */
+  qrLabel: string;
 }) {
   const display = useTvStore((s) => s.display);
   const tvPage = useTvStore((s) => s.tvPage);
@@ -74,7 +79,16 @@ export function TvScreen({
 
   return (
     <div className="group relative flex h-dvh w-full flex-col overflow-hidden bg-cream-tv px-11 py-8 text-ink">
-      <Lattice opacity={0.4} />
+      {/* Girih star-field — scaled up so the geometry still reads from across the hall. */}
+      <Girih id="girih-tv" opacity={0.18} color="var(--gold-strong)" scale={1.7} />
+      {/* Nûr — a warm halo pooling behind the stage, breathing slowly. */}
+      <div
+        aria-hidden="true"
+        className="animate-glow pointer-events-none absolute inset-x-0 top-[18%] h-3/5"
+        style={{
+          background: "radial-gradient(58% 68% at 50% 50%, rgba(217,189,119,0.34), transparent 72%)",
+        }}
+      />
 
       {/* Fullscreen toggle — subtle, corner; clearer on hover. */}
       <button
@@ -106,6 +120,9 @@ export function TvScreen({
         </div>
       </header>
 
+      {/* Ornamental rule separating the chrome from the rotating stage. */}
+      <Ornament className="relative mx-auto mt-6 text-gold-deep" width={520} />
+
       {/* Rotating page (crossfade) */}
       <main className="relative flex flex-1 items-center py-8">
         <AnimatePresence mode="wait">
@@ -124,24 +141,26 @@ export function TvScreen({
 
       {/* Footer: QR + progress dots */}
       <footer className="relative flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 rounded-[10px] border border-gold-deep/25 bg-tint-warm p-3">
           <div className="rounded-[8px] bg-white p-2 shadow-frame">{qr}</div>
           <div>
-            <p className="text-[15px] font-semibold text-ink">
+            <p className="flex items-center gap-2 text-[15px] font-semibold text-ink">
+              <Star8 size={12} className="text-gold-deep" />
               Scannez pour voir la caisse et donner
             </p>
-            <p className="text-sm text-muted-ink">mussalla-mtl.ca</p>
+            <p className="text-sm text-muted-ink">{qrLabel}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        {/* The page you're on is a lit khatam star; the rest are quiet dots. */}
+        <div className="flex items-center gap-3">
           {TV_PAGES.map((page, i) => (
-            <span
-              key={page.key}
-              className={cn(
-                "h-2 rounded-full transition-all duration-500",
-                i === activeIndex ? "w-[26px] bg-emerald" : "w-2 bg-hairline-strong",
+            <span key={page.key} className="flex size-4 items-center justify-center">
+              {i === activeIndex ? (
+                <Star8 size={17} className="animate-starbloom text-emerald" />
+              ) : (
+                <span className={cn("size-2 rounded-full bg-hairline-strong transition-all")} />
               )}
-            />
+            </span>
           ))}
         </div>
       </footer>

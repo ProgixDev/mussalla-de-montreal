@@ -4,6 +4,10 @@ import { BalanceCard } from "@/components/board/balance-card";
 import { GoalCard } from "@/components/board/goal-card";
 import { ContributionRow, ExpenseRow, SectionLabel } from "@/components/board/rows";
 import { QrCode } from "@/components/board/qr-code";
+import { Girih } from "@/components/ui/girih";
+import { Ornament } from "@/components/ui/ornament";
+import { Star8 } from "@/components/ui/star";
+import { ArchCrown } from "@/components/ui/arch";
 import { CheckIcon } from "@/components/ui/icons";
 import { getCaisseData } from "@/core/data/seed";
 import { computeTotals } from "@/core/data/derive";
@@ -25,14 +29,17 @@ export default function CaissePage() {
   const totals = computeTotals(data);
 
   return (
-    <main className="min-h-dvh bg-sand">
-      <div className="mx-auto grid w-full max-w-[1080px] gap-8 px-4 py-8 md:px-8 md:py-12 lg:grid-cols-[1fr_minmax(0,420px)] lg:items-start">
+    <main className="relative min-h-dvh overflow-hidden bg-sand">
+      {/* Girih star-field ground — the quiet geometry under the whole board. */}
+      <Girih id="girih-caisse" opacity={0.16} color="var(--gold-strong)" />
+      <div className="relative mx-auto grid w-full max-w-[1080px] gap-8 px-4 py-8 md:px-8 md:py-12 lg:grid-cols-[1fr_minmax(0,420px)] lg:items-start">
         {/* Side panel (desktop): explains the phone/QR nature. */}
-        <aside className="order-2 lg:order-1 lg:pt-6">
-          <p className="eyebrow text-muted-ink">Vue téléphone · public</p>
+        <aside className="animate-rise order-2 lg:order-1 lg:pt-6" style={{ animationDelay: "0.06s" }}>
+          <p className="eyebrow text-gold-ink">Vue téléphone · public</p>
           <h1 className="font-display mt-3 text-[34px] leading-tight text-ink md:text-[42px]">
             Le même tableau, dans la poche.
           </h1>
+          <Ornament className="mt-4 text-gold-deep" width={170} />
           <p className="mt-4 max-w-[420px] text-[16px] leading-relaxed text-muted-ink">
             Ouvert en scannant le code QR de l’écran. On y voit la caisse en temps réel — et l’on
             peut donner par carte en quelques secondes, au nom affiché ou de façon anonyme.
@@ -47,19 +54,27 @@ export default function CaissePage() {
               ),
             )}
           </ul>
-          <div className="mt-7 hidden items-center gap-4 rounded-[8px] border border-hairline bg-white p-4 lg:flex">
+          <div className="mt-7 hidden items-center gap-4 rounded-[8px] border border-gold-deep/25 bg-tint-warm p-4 lg:flex">
             <div className="rounded-[6px] bg-white p-1">
               <QrCode url={`${site.url}/caisse`} size={84} />
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-ink">Scannez pour ouvrir</p>
+              <p className="flex items-center gap-2 text-[13px] font-semibold text-ink">
+                <Star8 size={11} className="text-gold-deep" />
+                Scannez pour ouvrir
+              </p>
               <p className="text-[12px] text-muted-ink">sur votre téléphone</p>
             </div>
           </div>
         </aside>
 
-        {/* The board (phone-shaped card). */}
-        <div className="order-1 mx-auto flex w-full max-w-[440px] flex-col overflow-hidden rounded-[16px] border border-hairline bg-cream shadow-frame lg:order-2">
+        {/* The board (phone-shaped card), crowned by a pointed arch. */}
+        <div
+          className="animate-rise order-1 mx-auto w-full max-w-[440px] lg:order-2"
+          style={{ animationDelay: "0.14s" }}
+        >
+          <ArchCrown className="mx-auto -mb-3" width={190} />
+          <div className="flex w-full flex-col overflow-hidden rounded-[16px] border border-hairline bg-cream shadow-frame">
           <header className="flex items-center gap-3 border-b border-hairline px-5 py-3.5">
             <div className="leading-tight">
               <p className="font-display text-[17px] text-ink">Mussalla de Montréal</p>
@@ -109,10 +124,12 @@ export default function CaissePage() {
 
             <Link
               href="/don"
-              className="flex h-12 w-full items-center justify-center rounded-[2px] bg-emerald text-[16px] font-semibold text-on-dark transition active:scale-[0.98] hover:bg-emerald-deep"
+              className="sheen flex h-12 w-full items-center justify-center gap-2 rounded-[2px] bg-emerald text-[16px] font-semibold text-on-dark shadow-lift transition hover:bg-emerald-deep active:scale-[0.98]"
             >
+              <Star8 size={13} className="text-gold" />
               Faire un don
             </Link>
+          </div>
           </div>
         </div>
       </div>

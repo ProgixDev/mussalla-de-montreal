@@ -1,6 +1,9 @@
 import { GoalCard } from "@/components/board/goal-card";
 import { ContributionRow, ExpenseRow } from "@/components/board/rows";
 import { MosqueSilhouette } from "@/components/ui/mosque-silhouette";
+import { Star8 } from "@/components/ui/star";
+import { Ornament } from "@/components/ui/ornament";
+import { ArchCrown } from "@/components/ui/arch";
 import type { CaisseData } from "@/core/data/types";
 import type { CaisseTotals } from "@/core/data/derive";
 import { formatCAD } from "@/lib/format";
@@ -12,16 +15,28 @@ import { formatCAD } from "@/lib/format";
 type PageProps = { data: CaisseData; totals: CaisseTotals };
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
-  return <p className="eyebrow mb-6 text-muted-ink">{children}</p>;
+  return (
+    <p className="eyebrow mb-6 flex items-center gap-2.5 text-gold-ink">
+      <Star8 size={12} />
+      {children}
+    </p>
+  );
 }
 
 export function ObjectifsPage({ data }: PageProps) {
   return (
     <div className="w-full">
       <Eyebrow>Nos objectifs en cours</Eyebrow>
-      <div className="space-y-8">
+      {/* One full-width row of circular gauges — readable from across the hall. */}
+      <div className="grid grid-cols-3 items-start gap-[clamp(24px,3.5vw,72px)]">
         {data.goals.slice(0, 3).map((goal) => (
-          <GoalCard key={goal.id} goal={goal} size="tv" />
+          <GoalCard
+            key={goal.id}
+            goal={goal}
+            size="tv"
+            layout="stack"
+            ringClassName="w-[clamp(96px,11vw,200px)]"
+          />
         ))}
       </div>
     </div>
@@ -88,12 +103,15 @@ export function CaissePage({ data, totals }: PageProps) {
 export function AccueilPage() {
   return (
     <div className="flex w-full flex-col items-center text-center">
+      {/* The devotional page: the du'a sits inside a mihrab-like arch. */}
+      <ArchCrown width={340} className="mb-1" />
       <p className="font-arabic text-[34px] leading-none text-gold-strong" lang="ar">
         بارك الله فيكم
       </p>
       <h2 className="font-display mt-3 max-w-[780px] text-[47px] leading-[1.12] text-ink">
         Qu’Allah récompense les donateurs
       </h2>
+      <Ornament className="mt-5 text-gold-deep" width={240} />
       <p className="mt-4 max-w-[520px] text-[18px] text-muted-ink">
         Merci à toutes celles et ceux qui font vivre la mussalla. Chaque geste, si petit soit-il,
         compte.

@@ -1,26 +1,68 @@
 import { cn } from "@/lib/utils";
-import { ProgressBar } from "@/components/ui/progress-bar";
+import { ProgressRing } from "@/components/ui/progress-ring";
 import { goalPercent, goalProgress, goalRemainingCents } from "@/core/data/derive";
 import type { Goal } from "@/core/data/types";
 import { formatCAD } from "@/lib/format";
 
 /**
- * One objective with its gold-emerald progress bar. Shared by the phone board, the
- * TV "Objectifs" page, and the backoffice. `size` scales the type for TV legibility.
+ * One objective, read as a circular gauge: an emerald→gold ring that sweeps to the
+ * goal's percentage on mount, with the figures alongside. Shared by the phone board,
+ * the TV "Objectifs" page, and the home page.
+ *
+ * `layout="row"`  — ring left, figures right (compact: phone board, home cards).
+ * `layout="stack"` — ring above, figures centred beneath (the full-width TV row).
+ *                    Size the ring fluidly via `ringClassName`.
  */
 export function GoalCard({
   goal,
   size = "phone",
+  layout = "row",
+  ringClassName,
   className,
 }: {
   goal: Goal;
   size?: "phone" | "tv";
+  layout?: "row" | "stack";
+  ringClassName?: string;
   className?: string;
 }) {
   const tv = size === "tv";
+  const stack = layout === "stack";
+
+  const ring = (
+    <ProgressRing
+      id={`ring-${size}-${layout}-${goal.id}`}
+      value={goalProgress(goal)}
+      percent={goalPercent(goal)}
+      stroke={stack ? 7 : 9}
+      size={stack ? undefined : tv ? 116 : 74}
+      className={stack ? ringClassName : undefined}
+    />
+  );
+
+  if (stack) {
+    return (
+      <div className={cn("flex flex-col items-center text-center", className)}>
+        {ring}
+        <h3 className="font-display mt-[clamp(16px,1.6vw,32px)] text-[clamp(19px,1.75vw,34px)] leading-tight text-ink">
+          {goal.title}
+        </h3>
+        <p className="mt-[clamp(8px,0.8vw,16px)] text-[clamp(14px,1.1vw,22px)] text-muted-ink">
+          <span className="nums font-semibold text-ink">{formatCAD(goal.raisedCents)}</span> sur{" "}
+          <span className="nums">{formatCAD(goal.targetCents)}</span>
+        </p>
+        <p className="mt-[clamp(4px,0.4vw,10px)] text-[clamp(12px,0.9vw,18px)] text-faint">
+          il reste <span className="nums">{formatCAD(goalRemainingCents(goal))}</span> · Échéance :{" "}
+          {goal.due}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn(className)}>
-      <div className="flex items-baseline justify-between gap-4">
+    <div className={cn("flex items-center gap-5", tv && "gap-7", className)}>
+      {ring}
+      <div className="min-w-0 flex-1">
         <h3
           className={cn(
             "font-display text-ink",
@@ -29,28 +71,19 @@ export function GoalCard({
         >
           {goal.title}
         </h3>
-        <span
-          className={cn(
-            "nums shrink-0 font-medium whitespace-nowrap text-emerald",
-            tv ? "text-2xl" : "text-sm",
-          )}
-        >
-          {goalPercent(goal)} %
-        </span>
-      </div>
-      <ProgressBar value={goalProgress(goal)} className="mt-2" height={tv ? 14 : 8} />
-      <div
-        className={cn(
-          "mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1",
-          tv ? "text-[15px]" : "text-[12px]",
-        )}
-      >
-        <p className="text-muted-ink">
+        <p className={cn("mt-1.5 text-muted-ink", tv ? "text-[15px]" : "text-[12px]")}>
           <span className="nums font-semibold text-ink">{formatCAD(goal.raisedCents)}</span> sur{" "}
-          <span className="nums">{formatCAD(goal.targetCents)}</span> · il reste{" "}
-          <span className="nums">{formatCAD(goalRemainingCents(goal))}</span>
+          <span className="nums">{formatCAD(goal.targetCents)}</span>
         </p>
-        <p className="text-faint">Échéance : {goal.due}</p>
+        <p
+          className={cn("mt-1 flex flex-wrap gap-x-3 text-faint", tv ? "text-[14px]" : "text-[12px]")}
+        >
+          <span>
+            il reste <span className="nums">{formatCAD(goalRemainingCents(goal))}</span>
+          </span>
+          <span>·</span>
+          <span>Échéance : {goal.due}</span>
+        </p>
       </div>
     </div>
   );

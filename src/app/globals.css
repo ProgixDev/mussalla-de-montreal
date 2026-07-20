@@ -40,8 +40,16 @@
   --on-dark-muted: #cabfa6;
   --on-dark-faint: #8b9486;
 
+  /* Readable gold for TEXT on cream (~5:1). The brighter golds above are for
+     strokes, ornament, and text on dark grounds only — they fail AA on cream. */
+  --gold-ink: #7a6220;
+
+  /* Deep vault-interior emerald — the ground behind a lit niche (decorative only). */
+  --emerald-niche: #082a1c;
+
   /* Surfaces & lines */
   --tint: #eaf1ea; /* selected chip / icon-tile bg */
+  --tint-warm: rgba(184, 147, 58, 0.1); /* warm gold niche tint for tiles/chips */
   --hairline: #e5dbc4; /* 1px borders on light */
   --hairline-strong: #d2c6a8; /* input borders */
   --hairline-dark: #24392f; /* borders on dark */
@@ -71,6 +79,9 @@
   --color-gold-deep: var(--gold-deep);
   --color-gold-strong: var(--gold-strong);
   --color-gold-light: var(--gold-light);
+  --color-gold-ink: var(--gold-ink);
+  --color-emerald-niche: var(--emerald-niche);
+  --color-tint-warm: var(--tint-warm);
   --color-cream: var(--cream);
   --color-cream-tv: var(--cream-tv);
   --color-cream-2: var(--cream-2);
@@ -87,6 +98,30 @@
   --color-hairline-dark: var(--hairline-dark);
   --color-row-divider: var(--row-divider);
   --color-error: var(--error);
+
+  /* ── shadcn/ui semantic bridge ──────────────────────────────────────────
+     shadcn primitives (Button, Input, Card) are authored against these names.
+     Without them the components render transparent/black. Mapped onto the
+     house palette so anything from the shadcn registry lands on-brand. */
+  --color-background: var(--cream);
+  --color-foreground: var(--ink);
+  --color-primary: var(--emerald);
+  --color-primary-foreground: var(--cream);
+  --color-secondary: var(--cream-2);
+  --color-secondary-foreground: var(--ink);
+  --color-card: var(--cream);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--cream);
+  --color-popover-foreground: var(--ink);
+  --color-muted: var(--cream-2);
+  --color-muted-foreground: var(--muted-ink);
+  --color-accent: var(--tint-warm);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--error);
+  --color-destructive-foreground: var(--cream);
+  --color-border: var(--hairline-strong);
+  --color-input: var(--hairline-strong);
+  --color-ring: var(--emerald-focus);
 
   /* Fonts (variables injected by next/font in layout.tsx) */
   --font-display: var(--font-marcellus), Georgia, serif;
@@ -118,6 +153,7 @@
   /* Opacity-only reveal — the ONLY motion allowed on sacred Arabic (basmala / du'a):
      the Name of Allah is never scaled, rotated, or clipped. */
   --animate-softfade: softfade 1s ease both;
+  --animate-ringfill: ringfill 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @keyframes tvfade {
@@ -238,6 +274,16 @@
   }
   to {
     opacity: 1;
+  }
+}
+/* Circular progress sweeping from empty to its value. The element supplies
+   --ring-circ (full circumference) and --ring-target (the value's offset). */
+@keyframes ringfill {
+  from {
+    stroke-dashoffset: var(--ring-circ);
+  }
+  to {
+    stroke-dashoffset: var(--ring-target);
   }
 }
 /* A diagonal light sweep across gold surfaces. */
