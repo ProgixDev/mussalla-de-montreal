@@ -8,7 +8,6 @@ import { GoalCard } from "@/components/board/goal-card";
 import {
   ArrowRightIcon,
   EyeIcon,
-  HeartIcon,
   LockIcon,
   PhoneIcon,
   ShieldIcon,
@@ -168,18 +167,17 @@ export default function AccueilPage() {
               style={{ animationDelay: "0.58s" }}
             >
               <Link
-                href="/don"
-                className="sheen inline-flex h-12 items-center gap-2 rounded-[2px] bg-gold px-6 text-[15px] font-semibold text-ink shadow-lamp transition hover:opacity-90 active:scale-[0.98]"
-              >
-                <HeartIcon width={18} height={18} />
-                Faire un don
-              </Link>
-              <Link
                 href="/caisse"
-                className="inline-flex h-12 items-center gap-2 rounded-[2px] border border-on-dark/25 px-6 text-[15px] font-medium text-on-dark transition hover:border-gold/60 hover:bg-white/5"
+                className="sheen inline-flex h-12 items-center gap-2 rounded-[2px] bg-gold px-6 text-[15px] font-semibold text-ink shadow-lamp transition hover:opacity-90 active:scale-[0.98]"
               >
                 Voir la caisse en direct
                 <ArrowRightIcon width={16} height={16} />
+              </Link>
+              <Link
+                href="/apprendre"
+                className="inline-flex h-12 items-center gap-2 rounded-[2px] border border-on-dark/25 px-6 text-[15px] font-medium text-on-dark transition hover:border-gold/60 hover:bg-white/5"
+              >
+                Apprendre
               </Link>
             </div>
           </div>
@@ -222,10 +220,10 @@ export default function AccueilPage() {
               <Ornament className="mt-4 text-gold-deep" width={170} />
             </div>
             <Link
-              href="/don"
+              href="/caisse"
               className="inline-flex items-center gap-2 text-[15px] font-medium text-emerald hover:underline"
             >
-              Contribuer à un objectif
+              Voir le détail des objectifs
               <ArrowRightIcon width={16} height={16} />
             </Link>
           </div>
@@ -332,13 +330,6 @@ export default function AccueilPage() {
             Merci à toutes celles et ceux qui font vivre la mussalla. Chaque geste, si petit
             soit-il, compte.
           </p>
-          <Link
-            href="/don"
-            className="sheen mt-9 inline-flex h-12 items-center gap-2 rounded-[2px] bg-gold px-7 text-[15px] font-semibold text-ink shadow-lamp transition hover:opacity-90 active:scale-[0.98]"
-          >
-            <HeartIcon width={18} height={18} />
-            Faire un don
-          </Link>
         </div>
       </section>
     </>

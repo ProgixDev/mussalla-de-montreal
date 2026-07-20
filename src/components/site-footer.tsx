@@ -9,7 +9,7 @@ export function SiteFooter() {
       links: [
         { label: "Accueil", href: "/" },
         { label: "La caisse", href: "/caisse" },
-        { label: "Faire un don", href: "/don" },
+        { label: "Apprendre", href: "/apprendre" },
       ],
     },
     {
@@ -62,7 +62,6 @@ export function SiteFooter() {
             <li>Montréal (Québec)</li>
             <li>Dollars canadiens (CAD)</li>
             <li>Interface en français</li>
-            <li>Paiements sécurisés par Square</li>
           </ul>
         </div>
       </div>

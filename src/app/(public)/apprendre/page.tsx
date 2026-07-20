@@ -1,9 +1,7 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { Girih } from "@/components/ui/girih";
 import { Ornament } from "@/components/ui/ornament";
 import { Star8 } from "@/components/ui/star";
-import { HeartIcon } from "@/components/ui/icons";
 import { VideoCard, LEARN_CATEGORIES } from "@/features/learn";
 
 export const metadata: Metadata = {
@@ -101,13 +99,6 @@ export default function ApprendrePage() {
           <p className="mt-4 max-w-[520px] text-[17px] text-on-dark-muted">
             Apprendre, c’est aussi faire vivre la mussalla qui nous enseigne. Chaque geste compte.
           </p>
-          <Link
-            href="/don"
-            className="sheen mt-9 inline-flex h-12 items-center gap-2 rounded-[2px] bg-gold px-7 text-[15px] font-semibold text-ink shadow-lamp transition hover:opacity-90 active:scale-[0.98]"
-          >
-            <HeartIcon width={18} height={18} />
-            Faire un don
-          </Link>
         </div>
       </section>
     </>

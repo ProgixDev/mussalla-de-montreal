@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { BalanceCard } from "@/components/board/balance-card";
 import { GoalCard } from "@/components/board/goal-card";
@@ -121,14 +120,6 @@ export default function CaissePage() {
             <p className="px-1 text-center text-[12px] text-faint">
               Un don anonyme reste anonyme à l’écran — mais compte dans le total, comme les autres.
             </p>
-
-            <Link
-              href="/don"
-              className="sheen flex h-12 w-full items-center justify-center gap-2 rounded-[2px] bg-emerald text-[16px] font-semibold text-on-dark shadow-lift transition hover:bg-emerald-deep active:scale-[0.98]"
-            >
-              <Star8 size={13} className="text-gold" />
-              Faire un don
-            </Link>
           </div>
           </div>
         </div>

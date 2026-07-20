@@ -13,8 +13,7 @@ feature-slice architecture (`app → features → shared → core`).
 | Surface | Route | What it is |
 | --- | --- | --- |
 | **Accueil** | `/accueil` | Landing/launcher — hero, live totals, links to the surfaces |
-| **Vue téléphone** | `/` | The public board a QR scan opens. Mobile-first, read-only, `Faire un don` |
-| **Faire un don** | `/don` | 5-step donation wizard (montant → destination → affichage → paiement → reçu) |
+| **Vue téléphone** | `/` | The public board a QR scan opens. Mobile-first, read-only |
 | **Écran TV** | `/tv` | Full-screen kiosk for the prayer hall — 4 auto-rotating pages + a real QR |
 | **Backoffice** | `/admin` | Private manager console — dashboard, contributions, dépenses, objectifs, affichage, membres |
 
@@ -71,11 +70,10 @@ The UI is built against the seed layer so the backend drops in behind it. Planne
 2. **Realtime** — the TV subscribes to `settings` so backoffice changes (pin a page,
    change speed) reflect **live, no reload**. The seam is `setDisplay` in
    [`src/features/tv-display/store.ts`](src/features/tv-display/store.ts).
-3. **Square (CAD, sandbox first)** — the Web Payments SDK mounts on the `Paiement` step
-   (placeholder today in [`donation-flow.tsx`](src/features/donation/donation-flow.tsx)).
-   On success a **signature-verified webhook** (`payment.created` / `payment.updated`)
-   records the gift automatically; **Square Subscriptions** handle *mensuel* givers. Copy
-   `.env.example` → `.env.local` and fill the `SQUARE_*` vars.
+3. **Payments — deliberately not on the site.** The in-app donation wizard was removed:
+   gifts are collected in person, and a manager records them in the backoffice. The site
+   is a read-only transparency board. The `SQUARE_*` placeholders remain in
+   `.env.example` should online giving ever be revisited.
 
 ## Point the mussalla TV at the screen
 

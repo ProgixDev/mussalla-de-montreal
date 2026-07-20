@@ -11,13 +11,12 @@ import { MenuIcon, XIcon } from "@/components/ui/icons";
  * Public site navigation. On the home page it floats transparently over the hero
  * photo (like a landing hero) and turns into the solid night-emerald bar once you
  * scroll or open the mobile menu. On every other public page it's the solid bar from
- * the start. Focused surfaces (/don, /tv, /admin) render their own chrome.
+ * the start. Focused surfaces (/tv, /admin) render their own chrome.
  */
 const LINKS = [
   { href: "/", label: "Accueil" },
   { href: "/caisse", label: "La caisse" },
   { href: "/apprendre", label: "Apprendre" },
-  { href: "/don", label: "Faire un don" },
   { href: "/tv", label: "Écran TV" },
   { href: "/admin", label: "Backoffice" },
 ];
