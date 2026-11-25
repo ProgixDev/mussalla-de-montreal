@@ -10,6 +10,8 @@ export const TV_PAGES = [
   { key: "objectifs", label: "Objectifs" },
   { key: "contributions", label: "Contributions" },
   { key: "caisse", label: "Caisse & dépenses" },
+  { key: "felicitations", label: "Félicitations" },
+  { key: "evenements", label: "Événements & prière" },
   { key: "accueil", label: "Accueil" },
 ] as const;
 

@@ -26,3 +26,6 @@ test-results/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Client's internal developer spec (from their Manus session) — kept local, not in this public repo.
+design/cahier-des-charges-portail.md

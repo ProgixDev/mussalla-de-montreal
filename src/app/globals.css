@@ -30,19 +30,21 @@
   --cream-2: #efe6d4; /* secondary cream (sidebar) */
   --sand: #e3dac6; /* outer backdrop behind device frames */
 
-  /* Text on light */
+  /* Text on light. Both greys clear WCAG AA (4.5:1) on white AND cream — the old
+     values (#6c7a70, #9aa79c) measured 4.0:1 and 2.2:1 on cream and failed. */
   --body: #2b3b33; /* secondary body */
-  --muted-ink: #6c7a70; /* muted body / captions */
-  --faint: #9aa79c; /* fine print, uppercase micro-labels */
+  --muted-ink: #535f57; /* muted body / captions — 5.9:1 on cream, 4.8:1 on sand */
+  --faint: #5f6c63; /* fine print, uppercase micro-labels — 4.9:1 on cream */
 
   /* Text on dark */
   --on-dark: #f4eddd;
   --on-dark-muted: #cabfa6;
   --on-dark-faint: #8b9486;
 
-  /* Readable gold for TEXT on cream (~5:1). The brighter golds above are for
-     strokes, ornament, and text on dark grounds only — they fail AA on cream. */
-  --gold-ink: #7a6220;
+  /* Readable gold for TEXT on light grounds — 6.2:1 on cream, 5.0:1 on sand. The
+     brighter golds above are for strokes, ornament, and text on dark grounds only:
+     as text on cream they measure 2.1–2.6:1 and fail AA. */
+  --gold-ink: #6b5717;
 
   /* Deep vault-interior emerald — the ground behind a lit niche (decorative only). */
   --emerald-niche: #082a1c;
@@ -58,8 +60,7 @@
 
   /* Shadows */
   --shadow-hero: 0 26px 60px -24px rgba(10, 28, 21, 0.55);
-  --shadow-frame:
-    0 14px 40px -8px rgba(20, 21, 15, 0.28), 0 4px 12px -4px rgba(20, 21, 15, 0.12);
+  --shadow-frame: 0 14px 40px -8px rgba(20, 21, 15, 0.28), 0 4px 12px -4px rgba(20, 21, 15, 0.12);
   --shadow-lift: 0 16px 34px -16px rgba(10, 28, 21, 0.42);
   --shadow-modal: 0 24px 60px -12px rgba(20, 21, 15, 0.45);
   --shadow-lamp: 0 0 70px -14px rgba(217, 189, 119, 0.5); /* nur / lantern glow */
@@ -286,6 +287,17 @@
     stroke-dashoffset: var(--ring-target);
   }
 }
+@keyframes scrollcue {
+  to {
+    transform: translateY(350%);
+  }
+}
+/* A slow horizontal drift for the gifts ticker (the track holds the list twice). */
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
 /* A diagonal light sweep across gold surfaces. */
 @keyframes sheen {
   0% {
@@ -335,6 +347,32 @@
   /* Tabular figures for money/clocks so digits don't jitter as they update. */
   .nums {
     font-variant-numeric: tabular-nums;
+  }
+  /* Film grain over the night scenes — a whisper of texture so the dark never looks
+     like flat CSS. SVG noise, tiled; data: URIs are allowed by the CSP (img-src). */
+  .grain {
+    opacity: 0.09;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  /* "Avancez" cue: a drop of gold light running down a hairline. */
+  .scrollcue::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -40%;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(180deg, transparent, var(--gold-light));
+    animation: scrollcue 2.2s cubic-bezier(0.6, 0, 0.4, 1) infinite;
+  }
+  /* Ledger leader: the dotted line that runs from a label to its amount, like a
+     printed account book. Put it on a flex-1 spacer between the two. */
+  .leader {
+    min-width: 1.5rem;
+    align-self: flex-end;
+    margin-bottom: 0.4em;
+    border-bottom: 1.5px dotted color-mix(in oklab, var(--gold-strong) 55%, transparent);
   }
   /* Gold surfaces catch a slow diagonal light sweep (nur). Parent clips it. */
   .sheen {

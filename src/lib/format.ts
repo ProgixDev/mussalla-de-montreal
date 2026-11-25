@@ -72,3 +72,34 @@ export function formatDateLong(date: Date | number): string {
 export function formatDate(date: Date | number): string {
   return dateShortFormatter.format(date);
 }
+
+const dayLongFormatter = new Intl.DateTimeFormat("fr-CA", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
+/**
+ * A bare ISO day ("2026-11-28") as a LOCAL date. `new Date("2026-11-28")` is UTC
+ * midnight, which Montréal (UTC−5) would print as the 27th — never parse bare days that way.
+ */
+export function parseDay(iso: string): Date {
+  const [y = 1970, m = 1, d = 1] = iso.slice(0, 10).split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** "2026-11-28" → "28 nov. 2026" */
+export function formatDay(iso: string): string {
+  return formatDate(parseDay(iso));
+}
+
+/** "2026-11-28" → "Samedi 28 novembre" */
+export function formatDayLong(iso: string): string {
+  return capitalize(dayLongFormatter.format(parseDay(iso)));
+}
+
+/** Full ISO timestamp → "21 nov. 2026, 10 h 40" (client-side: local time zone). */
+export function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  return `${formatDate(d)}, ${formatTime(d)}`;
+}

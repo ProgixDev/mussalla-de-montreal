@@ -21,7 +21,13 @@ export type ExpenseCategory =
 export type MemberRole = "Administrateur" | "Gestionnaire";
 
 /** The four rotating TV pages, in order. */
-export type TvPageKey = "objectifs" | "contributions" | "caisse" | "accueil";
+export type TvPageKey =
+  | "objectifs"
+  | "contributions"
+  | "caisse"
+  | "felicitations"
+  | "evenements"
+  | "accueil";
 export type DisplayMode = "rotation" | "pinned";
 
 export interface Member {

@@ -15,11 +15,11 @@ export function VideoCard({ video }: { video: LearnVideo }) {
   const thumb = `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-[14px] border border-hairline bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-gold-deep hover:shadow-lift">
-      <div className="relative aspect-video w-full overflow-hidden bg-ink">
+    <article className="group border-gold/15 hover:border-gold/50 flex flex-col overflow-hidden rounded-[16px] border bg-white/[0.035] shadow-[0_30px_60px_-30px_rgba(0,0,0,0.8)] transition-all duration-200 hover:-translate-y-1">
+      <div className="bg-ink relative aspect-video w-full overflow-hidden">
         {playing ? (
           <iframe
-            className="absolute inset-0 h-full w-full animate-tvfade"
+            className="animate-tvfade absolute inset-0 h-full w-full"
             src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
             title={video.title}
             loading="lazy"
@@ -40,15 +40,21 @@ export function VideoCard({ video }: { video: LearnVideo }) {
               loading="lazy"
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            <span className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent" />
+            <span className="from-ink/75 via-ink/10 absolute inset-0 bg-gradient-to-t to-transparent" />
             {/* gold play seal */}
-            <span className="absolute top-1/2 left-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-gold text-ink shadow-lamp transition-transform duration-200 group-hover:scale-110">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <span className="bg-gold text-ink shadow-lamp absolute top-1/2 left-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
                 <path d="M8 5.5v13l11-6.5z" />
               </svg>
             </span>
             {/* duration badge */}
-            <span className="nums absolute right-3 bottom-3 rounded-full bg-ink/80 px-2 py-0.5 text-[12px] font-semibold text-on-dark">
+            <span className="nums bg-ink/80 text-on-dark absolute right-3 bottom-3 rounded-full px-2 py-0.5 text-[12px] font-semibold">
               {formatDuration(video.durationSeconds)}
             </span>
           </button>
@@ -56,16 +62,16 @@ export function VideoCard({ video }: { video: LearnVideo }) {
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-display text-[19px] leading-snug text-ink">{video.title}</h3>
-        <p className="mt-1.5 text-[14px] leading-relaxed text-muted-ink">{video.description}</p>
-        <div className="mt-4 flex items-center gap-2 border-t border-row-divider pt-3 text-[12px] text-faint">
-          <Star8 size={11} className="text-gold-deep" />
+        <h3 className="font-display text-on-dark text-[19px] leading-snug">{video.title}</h3>
+        <p className="text-on-dark-muted mt-1.5 text-[14px] leading-relaxed">{video.description}</p>
+        <div className="text-on-dark-faint mt-4 flex items-center gap-2 border-t border-white/[0.07] pt-3 text-[12px]">
+          <Star8 size={11} className="text-gold" />
           <span className="truncate">{video.channel}</span>
           <a
             href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto shrink-0 font-medium text-emerald hover:underline"
+            className="text-gold-light ml-auto shrink-0 font-medium hover:underline"
           >
             Sur YouTube
           </a>

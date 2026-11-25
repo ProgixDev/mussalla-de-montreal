@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Marcellus, Plus_Jakarta_Sans, Amiri } from "next/font/google";
 import { MotionProvider } from "@/components/motion";
+import { PortalHydrator } from "@/lib/portal/hydrator";
 import { site } from "@/core/site";
 import "./globals.css";
 
@@ -58,6 +59,7 @@ export default function RootLayout({
       <body
         className={`${marcellus.variable} ${jakarta.variable} ${amiri.variable} font-sans antialiased`}
       >
+        <PortalHydrator />
         <MotionProvider>{children}</MotionProvider>
       </body>
     </html>

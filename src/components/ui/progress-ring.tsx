@@ -22,6 +22,7 @@ export function ProgressRing({
   size,
   stroke = 8,
   className,
+  tone = "light",
 }: {
   /** Fraction in [0, 1]. */
   value: number;
@@ -33,7 +34,10 @@ export function ProgressRing({
   /** Stroke width in viewBox units (0–100). */
   stroke?: number;
   className?: string;
+  /** light: emerald→gold on cream. dark: gold→lamplight on night grounds. */
+  tone?: "light" | "dark";
 }) {
+  const dark = tone === "dark";
   const clamped = Math.min(1, Math.max(0, value));
   const radius = (100 - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -51,8 +55,8 @@ export function ProgressRing({
       <svg viewBox="0 0 100 100" className="block h-full w-full" aria-hidden="true">
         <defs>
           <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--emerald)" />
-            <stop offset="100%" stopColor="var(--gold-deep)" />
+            <stop offset="0%" stopColor={dark ? "var(--gold)" : "var(--emerald)"} />
+            <stop offset="100%" stopColor={dark ? "var(--gold-light)" : "var(--gold-deep)"} />
           </linearGradient>
         </defs>
 
@@ -62,8 +66,21 @@ export function ProgressRing({
           cy="50"
           r={radius}
           fill="none"
-          stroke="var(--hairline)"
+          stroke={dark ? "rgba(236,217,160,0.16)" : "var(--hairline)"}
           strokeWidth={stroke}
+        />
+
+        {/* engraved bezel — a ring of fine gold dots just inside the track, like a dial */}
+        <circle
+          cx="50"
+          cy="50"
+          r={radius - stroke / 2 - 3.2}
+          fill="none"
+          stroke="var(--gold-deep)"
+          strokeOpacity="0.55"
+          strokeWidth="0.9"
+          strokeLinecap="round"
+          strokeDasharray="0.01 3.1"
         />
 
         {/* value arc — starts at 12 o'clock and sweeps clockwise */}
@@ -93,7 +110,7 @@ export function ProgressRing({
           textAnchor="middle"
           dominantBaseline="central"
           className="font-display"
-          fill="var(--emerald)"
+          fill={dark ? "var(--on-dark)" : "var(--emerald)"}
           fontSize="23"
           style={{ fontVariantNumeric: "tabular-nums" }}
         >

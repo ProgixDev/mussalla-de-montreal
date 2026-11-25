@@ -19,13 +19,16 @@ export function GoalCard({
   layout = "row",
   ringClassName,
   className,
+  tone = "light",
 }: {
   goal: Goal;
   size?: "phone" | "tv";
   layout?: "row" | "stack";
   ringClassName?: string;
   className?: string;
+  tone?: "light" | "dark";
 }) {
+  const dark = tone === "dark";
   const tv = size === "tv";
   const stack = layout === "stack";
 
@@ -37,6 +40,7 @@ export function GoalCard({
       stroke={stack ? 7 : 9}
       size={stack ? undefined : tv ? 116 : 74}
       className={stack ? ringClassName : undefined}
+      tone={tone}
     />
   );
 
@@ -44,14 +48,31 @@ export function GoalCard({
     return (
       <div className={cn("flex flex-col items-center text-center", className)}>
         {ring}
-        <h3 className="font-display mt-[clamp(16px,1.6vw,32px)] text-[clamp(19px,1.75vw,34px)] leading-tight text-ink">
+        <h3
+          className={cn(
+            "font-display mt-[clamp(16px,1.6vw,32px)] text-[clamp(19px,1.75vw,34px)] leading-tight",
+            dark ? "text-on-dark" : "text-ink",
+          )}
+        >
           {goal.title}
         </h3>
-        <p className="mt-[clamp(8px,0.8vw,16px)] text-[clamp(14px,1.1vw,22px)] text-muted-ink">
-          <span className="nums font-semibold text-ink">{formatCAD(goal.raisedCents)}</span> sur{" "}
-          <span className="nums">{formatCAD(goal.targetCents)}</span>
+        <p
+          className={cn(
+            "mt-[clamp(8px,0.8vw,16px)] text-[clamp(14px,1.1vw,22px)]",
+            dark ? "text-on-dark-muted" : "text-muted-ink",
+          )}
+        >
+          <span className={cn("nums font-semibold", dark ? "text-gold-light" : "text-ink")}>
+            {formatCAD(goal.raisedCents)}
+          </span>{" "}
+          sur <span className="nums">{formatCAD(goal.targetCents)}</span>
         </p>
-        <p className="mt-[clamp(4px,0.4vw,10px)] text-[clamp(12px,0.9vw,18px)] text-faint">
+        <p
+          className={cn(
+            "mt-[clamp(4px,0.4vw,10px)] text-[clamp(12px,0.9vw,18px)]",
+            dark ? "text-on-dark-faint" : "text-faint",
+          )}
+        >
           il reste <span className="nums">{formatCAD(goalRemainingCents(goal))}</span> · Échéance :{" "}
           {goal.due}
         </p>
@@ -65,24 +86,40 @@ export function GoalCard({
       <div className="min-w-0 flex-1">
         <h3
           className={cn(
-            "font-display text-ink",
+            "font-display",
+            dark ? "text-on-dark" : "text-ink",
             tv ? "text-[27px] leading-tight" : "text-[19px] leading-snug",
           )}
         >
           {goal.title}
         </h3>
-        <p className={cn("mt-1.5 text-muted-ink", tv ? "text-[15px]" : "text-[12px]")}>
-          <span className="nums font-semibold text-ink">{formatCAD(goal.raisedCents)}</span> sur{" "}
-          <span className="nums">{formatCAD(goal.targetCents)}</span>
-        </p>
         <p
-          className={cn("mt-1 flex flex-wrap gap-x-3 text-faint", tv ? "text-[14px]" : "text-[12px]")}
+          className={cn(
+            "mt-1.5",
+            dark ? "text-on-dark-muted" : "text-muted-ink",
+            tv ? "text-[15px]" : "text-[12.5px]",
+          )}
         >
-          <span>
-            il reste <span className="nums">{formatCAD(goalRemainingCents(goal))}</span>
+          <span className={cn("nums font-semibold", dark ? "text-gold-light" : "text-ink")}>
+            {formatCAD(goal.raisedCents)}
+          </span>{" "}
+          sur <span className="nums">{formatCAD(goal.targetCents)}</span>
+        </p>
+        {/* Two lines, no "·" separator: in a narrow phone column the separator used to
+            wrap and dangle at the end of the first line. */}
+        <p
+          className={cn(
+            "mt-1",
+            dark ? "text-on-dark-faint" : "text-faint",
+            tv ? "text-[14px]" : "text-[12.5px]",
+          )}
+        >
+          Il reste{" "}
+          <span className={cn("nums", dark ? "text-on-dark-muted" : "text-body")}>
+            {formatCAD(goalRemainingCents(goal))}
           </span>
-          <span>·</span>
-          <span>Échéance : {goal.due}</span>
+          <br />
+          Échéance : <span className={dark ? "text-on-dark-muted" : "text-body"}>{goal.due}</span>
         </p>
       </div>
     </div>

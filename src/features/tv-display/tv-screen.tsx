@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import { AnimatePresence, m } from "@/components/motion";
 import { Emblem } from "@/components/ui/emblem";
 import { Girih } from "@/components/ui/girih";
@@ -14,6 +15,7 @@ import type { CaisseTotals } from "@/core/data/derive";
 import { formatDateLong, formatTime } from "@/lib/format";
 import { useTvStore } from "./provider";
 import { TV_PAGE_COMPONENTS } from "./pages";
+import { EmergencyTakeover } from "./portal-pages";
 
 /**
  * The full-screen kiosk. On a real TV the browser is fullscreened onto this page —
@@ -78,15 +80,32 @@ export function TvScreen({
       : `Rotation · ${display.rotationSpeed} s par page`;
 
   return (
-    <div className="group relative flex h-dvh w-full flex-col overflow-hidden bg-cream-tv px-11 py-8 text-ink">
+    <div className="group bg-night text-on-dark relative isolate flex h-dvh w-full flex-col overflow-hidden px-11 py-8">
+      {/* The gallery of lanterns, deep in shadow — the same place as the website. A dark
+          screen also glares far less in a prayer hall at night than a cream one. */}
+      <Image
+        src="/hero-galerie-wide.jpg"
+        alt=""
+        fill
+        sizes="100vw"
+        className="-z-20 object-cover object-[70%_50%] opacity-35"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10"
+        style={{
+          background: "radial-gradient(90% 80% at 50% 50%, rgba(5,16,12,0.55), rgba(5,16,12,0.92))",
+        }}
+      />
       {/* Girih star-field — scaled up so the geometry still reads from across the hall. */}
-      <Girih id="girih-tv" opacity={0.18} color="var(--gold-strong)" scale={1.7} />
+      <Girih id="girih-tv" opacity={0.07} color="var(--gold)" scale={1.7} className="-z-10" />
       {/* Nûr — a warm halo pooling behind the stage, breathing slowly. */}
       <div
         aria-hidden="true"
         className="animate-glow pointer-events-none absolute inset-x-0 top-[18%] h-3/5"
         style={{
-          background: "radial-gradient(58% 68% at 50% 50%, rgba(217,189,119,0.34), transparent 72%)",
+          background:
+            "radial-gradient(58% 68% at 50% 50%, rgba(217,189,119,0.16), transparent 72%)",
         }}
       />
 
@@ -95,7 +114,7 @@ export function TvScreen({
         type="button"
         onClick={toggleFullscreen}
         aria-label={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
-        className="absolute top-3 right-3 z-20 inline-flex size-9 items-center justify-center rounded-full bg-ink/5 text-muted-ink opacity-30 transition hover:bg-ink/10 hover:opacity-100 focus-visible:opacity-100"
+        className="text-on-dark-muted absolute top-3 right-3 z-20 inline-flex size-9 items-center justify-center rounded-full bg-white/5 opacity-30 transition hover:bg-white/10 hover:opacity-100 focus-visible:opacity-100"
       >
         <MaximizeIcon width={18} height={18} />
       </button>
@@ -103,25 +122,27 @@ export function TvScreen({
       {/* Header */}
       <header className="relative flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <Emblem size={52} className="text-emerald" />
+          <Emblem size={52} className="text-gold" />
           <div>
             <p className="font-display text-3xl leading-none">Mussalla de Montréal</p>
-            <p className="mt-1 flex items-center gap-2 text-sm tracking-wide text-muted-ink uppercase">
-              <span className="inline-block size-2 rounded-full bg-gold-deep animate-livepulse" />
+            <p className="text-on-dark-muted mt-1 flex items-center gap-2 text-sm tracking-wide uppercase">
+              <span className="bg-gold-light animate-livepulse inline-block size-2 rounded-full" />
               En direct · {statusLabel}
             </p>
           </div>
         </div>
         <div className="pr-10 text-right">
-          <p className="font-display nums text-5xl leading-none">
+          <p className="font-display nums text-gold-light text-5xl leading-none">
             {now === null ? "—" : formatTime(now)}
           </p>
-          <p className="mt-2 text-base text-muted-ink">{now === null ? "" : formatDateLong(now)}</p>
+          <p className="text-on-dark-muted mt-2 text-base">
+            {now === null ? "" : formatDateLong(now)}
+          </p>
         </div>
       </header>
 
       {/* Ornamental rule separating the chrome from the rotating stage. */}
-      <Ornament className="relative mx-auto mt-6 text-gold-deep" width={520} />
+      <Ornament className="text-gold relative mx-auto mt-6" width={520} />
 
       {/* Rotating page (crossfade) */}
       <main className="relative flex flex-1 items-center py-8">
@@ -141,14 +162,16 @@ export function TvScreen({
 
       {/* Footer: QR + progress dots */}
       <footer className="relative flex items-center justify-between">
-        <div className="flex items-center gap-4 rounded-[10px] border border-gold-deep/25 bg-tint-warm p-3">
-          <div className="rounded-[8px] bg-white p-2 shadow-frame">{qr}</div>
+        <div className="border-gold/25 flex items-center gap-4 rounded-[14px] border bg-white/[0.04] p-3 backdrop-blur-sm">
+          <div className="rounded-[8px] bg-white p-2 shadow-[0_0_40px_-8px_rgba(236,217,160,0.5)]">
+            {qr}
+          </div>
           <div>
-            <p className="flex items-center gap-2 text-[15px] font-semibold text-ink">
-              <Star8 size={12} className="text-gold-deep" />
-              Scannez pour voir la caisse et donner
+            <p className="text-on-dark flex items-center gap-2 text-[15px] font-semibold">
+              <Star8 size={12} className="text-gold" />
+              Scannez pour suivre la caisse sur votre téléphone
             </p>
-            <p className="text-sm text-muted-ink">{qrLabel}</p>
+            <p className="text-on-dark-muted text-sm">{qrLabel}</p>
           </div>
         </div>
         {/* The page you're on is a lit khatam star; the rest are quiet dots. */}
@@ -156,14 +179,15 @@ export function TvScreen({
           {TV_PAGES.map((page, i) => (
             <span key={page.key} className="flex size-4 items-center justify-center">
               {i === activeIndex ? (
-                <Star8 size={17} className="animate-starbloom text-emerald" />
+                <Star8 size={17} className="animate-starbloom text-gold-light" />
               ) : (
-                <span className={cn("size-2 rounded-full bg-hairline-strong transition-all")} />
+                <span className={cn("bg-on-dark/25 size-2 rounded-full transition-all")} />
               )}
             </span>
           ))}
         </div>
       </footer>
+      <EmergencyTakeover />
     </div>
   );
 }
