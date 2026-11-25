@@ -129,6 +129,7 @@ function Roster({ classId, me }: { classId: string; me: string }) {
               <button
                 type="button"
                 onClick={() => setActive(c)}
+                aria-label={`${c.firstName}, ${total} point${Math.abs(total) > 1 ? "s" : ""}${badges.length ? `, ${badges.length} badge${badges.length > 1 ? "s" : ""}` : ""} — donner des points`}
                 className="border-gold/15 hover:border-gold/55 focus-visible:outline-gold-light flex h-full w-full flex-col items-center rounded-[18px] border bg-white/[0.035] p-4 text-center transition hover:-translate-y-0.5 focus-visible:outline-2"
               >
                 <StarAvatar name={c.firstName} seed={c.avatar} size={56} />
@@ -522,7 +523,7 @@ function HomeworkTab({ classId }: { classId: string }) {
   };
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr] [&>*]:min-w-0">
       <Panel eyebrow="Nouveau devoir" title="Publier aux parents">
         <div className="space-y-4">
           <Field id="hw-title" label="Titre" required error={errors.title}>
@@ -580,7 +581,7 @@ function HomeworkTab({ classId }: { classId: string }) {
               capture="environment"
               multiple
               onChange={(e) => void onFiles(e.target.files)}
-              className="text-on-dark-muted file:text-on-dark text-[14px] file:mr-3 file:rounded-full file:border-0 file:bg-white/[0.08] file:px-4 file:py-2"
+              className="text-on-dark-muted file:text-on-dark w-full min-w-0 text-[14px] file:mr-3 file:rounded-full file:border-0 file:bg-white/[0.08] file:px-4 file:py-2"
             />
           </Field>
           {(photos.length > 0 || busy) && (
@@ -682,7 +683,7 @@ function MessagesTab({ classId, me }: { classId: string; me: string }) {
   };
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr] [&>*]:min-w-0">
       <Panel eyebrow="Écrire" title="Nouveau message">
         <div className="space-y-4">
           <Segmented
@@ -822,7 +823,7 @@ function CongratsTab({ classId, me }: { classId: string; me: string }) {
   };
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr] [&>*]:min-w-0">
       <Panel eyebrow="Proposer" title="Un bravo sur les écrans">
         <div className="space-y-4">
           <Segmented
@@ -967,7 +968,7 @@ function DelegationTab({ classId, me }: { classId: string; me: string }) {
   };
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr] [&>*]:min-w-0">
       <Panel eyebrow="Absence prévue" title="Déléguer ma classe">
         <div className="space-y-4">
           <Field id="dg-to" label="Enseignant remplaçant" required>

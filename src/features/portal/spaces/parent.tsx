@@ -303,6 +303,7 @@ export function ChildProgress({ child, forChild = false }: { child: Child; forCh
 
 export function ChildHomework({ child }: { child: Child }) {
   const homework = usePortal((s) => s.homework).filter((h) => h.classId === child.classId);
+  const done = usePortal((s) => s.homeworkDone);
   const photosAllowed = currentConsent(child, "homework_photo");
   return homework.length === 0 ? (
     <EmptyNote>Aucun devoir pour le moment.</EmptyNote>
@@ -311,6 +312,14 @@ export function ChildHomework({ child }: { child: Child }) {
       {homework.map((h) => (
         <Panel key={h.id} eyebrow={`À faire pour le ${formatDay(h.due)}`} title={h.title}>
           <p className="text-on-dark-muted text-[14.5px] leading-relaxed">{h.instructions}</p>
+          {(() => {
+            const mark = done.find((d) => d.childId === child.id && d.homeworkId === h.id);
+            return mark ? (
+              <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#22c3b5]/15 px-3 py-1 text-[13px] text-[#9ff3e9]">
+                {child.firstName} a coché « J’ai révisé » · {formatDateTime(mark.at)}
+              </p>
+            ) : null;
+          })()}
           <div className="mt-4 flex flex-wrap gap-3">
             {photosAllowed && h.photos?.length
               ? h.photos.map((src, i) => (

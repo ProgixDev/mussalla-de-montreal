@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { XIcon } from "@/components/ui/icons";
 
 /**
@@ -22,6 +22,9 @@ export function Dialog({
   footer?: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  // Unique per dialog: several dialogs can be mounted at once (an alert being composed
+  // while another one is live), and a shared id would give them all the first one's name.
+  const titleId = useId();
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
@@ -36,11 +39,11 @@ export function Dialog({
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
-      aria-labelledby="dialog-title"
+      aria-labelledby={titleId}
       className="border-gold/20 text-on-dark m-auto w-[min(560px,calc(100vw-32px))] rounded-[20px] border bg-[#0b1f17] p-0 shadow-[0_40px_90px_-20px_rgba(0,0,0,0.9)] backdrop:bg-black/60 backdrop:backdrop-blur-sm"
     >
       <div className="border-gold/10 flex items-start justify-between gap-4 border-b px-6 py-4">
-        <h2 id="dialog-title" className="font-display text-[21px] leading-tight">
+        <h2 id={titleId} className="font-display text-[21px] leading-tight">
           {title}
         </h2>
         <button

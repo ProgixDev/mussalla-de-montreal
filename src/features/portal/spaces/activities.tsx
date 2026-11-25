@@ -115,10 +115,24 @@ export function ActivitiesSpace({ me }: SpaceProps) {
 // ── Événements ───────────────────────────────────────────────────────────
 function EventsTab() {
   const events = usePortal((s) => s.events);
+  const resubmitEvent = usePortal((s) => s.resubmitEvent);
+  const [announce, setAnnounce] = useState("");
+  const announceRef = useRef<HTMLParagraphElement>(null);
   const sorted = [...events].sort(
     (a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title, "fr"),
   );
   const pending = events.filter((e) => e.status === "submitted").length;
+
+  /** The pressed button disappears with the draft state: keep the keyboard user oriented. */
+  const resubmit = (e: CentreEvent) => {
+    flushSync(() => {
+      resubmitEvent(e.id);
+      setAnnounce(
+        `« ${e.title} » est de nouveau envoyé pour approbation. L’administration décidera de sa publication.`,
+      );
+    });
+    announceRef.current?.focus();
+  };
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
@@ -126,6 +140,18 @@ function EventsTab() {
         eyebrow={`${plural(events.length, "élément", "éléments")} · ${plural(pending, "en attente", "en attente")}`}
         title="Calendrier du centre"
       >
+        <p
+          ref={announceRef}
+          tabIndex={-1}
+          role="status"
+          className={cn(
+            "focus-visible:outline-gold-light focus-visible:outline-2 focus-visible:outline-offset-2",
+            announce && cn(statusMessageCls, "mt-0 mb-4"),
+          )}
+        >
+          {announce && <CheckIcon width={18} height={18} className="mt-0.5 shrink-0" />}
+          {announce}
+        </p>
         {sorted.length === 0 ? (
           <EmptyNote>
             Aucun événement pour l’instant. Proposez le premier avec le formulaire.
@@ -133,7 +159,7 @@ function EventsTab() {
         ) : (
           <ul className="grid gap-3">
             {sorted.map((e) => (
-              <EventItem key={e.id} event={e} />
+              <EventItem key={e.id} event={e} onResubmit={() => resubmit(e)} />
             ))}
           </ul>
         )}
@@ -143,7 +169,7 @@ function EventsTab() {
   );
 }
 
-function EventItem({ event: e }: { event: CentreEvent }) {
+function EventItem({ event: e, onResubmit }: { event: CentreEvent; onResubmit: () => void }) {
   const status = EVENT_STATUS[e.status];
   return (
     <li className="border-gold/12 rounded-[14px] border bg-white/[0.03] p-4">
@@ -181,6 +207,17 @@ function EventItem({ event: e }: { event: CentreEvent }) {
       </dl>
       {e.description && (
         <p className="text-on-dark-muted mt-2 text-[14px] leading-relaxed">{e.description}</p>
+      )}
+      {e.status === "draft" && (
+        <div className="border-gold/10 mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-3">
+          <p className="text-on-dark-muted min-w-48 flex-1 text-[13px] leading-relaxed">
+            Renvoyé en brouillon par l’administration : il n’est affiché nulle part tant qu’il n’est
+            pas soumis de nouveau puis approuvé.
+          </p>
+          <button type="button" onClick={onResubmit} className={btn("gold", "sm")}>
+            Soumettre de nouveau <span className="sr-only">« {e.title} »</span>
+          </button>
+        </div>
       )}
     </li>
   );

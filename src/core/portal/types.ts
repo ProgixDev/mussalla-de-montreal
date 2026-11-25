@@ -343,8 +343,15 @@ export type ImamQuestionStatus =
 export interface ImamQuestion {
   id: string;
   authorId: string;
+  /**
+   * Name typed by the author when `authorId` is not a known person (public form, until
+   * sign-in is required). Private: only the author, authorised admins and the imam see it.
+   */
+  authorName?: string;
   question: string;
   followUp: "portail" | "courriel" | "telephone";
+  /** E-mail or phone for the follow-up channel the author chose. Private, never published. */
+  contact?: string;
   status: ImamQuestionStatus;
   answer?: string;
   at: string;

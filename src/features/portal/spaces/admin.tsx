@@ -1,19 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { usePortal } from "@/lib/portal/store";
-import { isAlertActive, isRubricValid, rubricWeightTotal } from "@/core/portal/derive";
+import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { APPLICANT_SELF, usePortal, type MembershipApplication } from "@/lib/portal/store";
+import {
+  ageOn,
+  hasConsent,
+  isAlertActive,
+  isRubricValid,
+  isWaitlisted,
+  rubricWeightTotal,
+} from "@/core/portal/derive";
 import type {
   AlertAudience,
   AlertChannel,
   EmergencyAlert,
+  Gender,
   MembershipStatus,
   RubricCategory,
 } from "@/core/portal/types";
 import { formatDateTime, formatDay } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Dialog } from "@/components/portal/dialog";
+import { CheckIcon } from "@/components/ui/icons";
 import {
   EmptyNote,
   Field,
@@ -31,6 +41,8 @@ import {
   ROLE_LABELS,
   SpaceHeading,
   SpaceTabs,
+  ofName,
+  todayIso,
   usePersonName,
   type SpaceProps,
 } from "../shared";
@@ -60,6 +72,7 @@ export function AdminSpace({ me }: SpaceProps) {
   const [tab, setTab] = useState<Tab>("tableau");
   const congrats = usePortal((s) => s.congratulations);
   const events = usePortal((s) => s.events);
+  const applications = usePortal((s) => s.applications);
   const pendingApprovals =
     congrats.filter((c) => c.status === "submitted").length +
     events.filter((e) => e.status === "submitted").length;
@@ -80,7 +93,7 @@ export function AdminSpace({ me }: SpaceProps) {
           { id: "approbations", label: "Approbations", badge: pendingApprovals },
           { id: "baremes", label: "Barèmes" },
           { id: "ecrans", label: "Écrans" },
-          { id: "membres", label: "Membres" },
+          { id: "membres", label: "Membres", badge: applications.length },
         ]}
       />
       {tab === "tableau" && <Dashboard go={setTab} />}
@@ -550,11 +563,11 @@ function Approvals({ me }: { me: string }) {
   const name = usePersonName();
   const pending = congrats.filter((c) => c.status === "submitted");
   const pendingEvents = events.filter((e) => e.status === "submitted");
-  const consentOk = (childId?: string) =>
-    !childId ||
-    (children.find((c) => c.id === childId)?.consents.find((x) => x.type === "screen_display")
-      ?.granted ??
-      false);
+  const consentOk = (childId?: string) => {
+    if (!childId) return true;
+    const child = children.find((c) => c.id === childId);
+    return child ? hasConsent(child, "screen_display") : false;
+  };
 
   return (
     <div className="grid gap-5 lg:grid-cols-2">
@@ -813,82 +826,263 @@ const MEMBERSHIP_LABEL: Record<MembershipStatus, string> = {
   expired: "Expirée",
 };
 
+const agree = (g: Gender, m: string, f: string) => (g === "femme" ? f : m);
+const listFr = (items: string[]) =>
+  new Intl.ListFormat("fr-CA", { style: "long", type: "conjunction" }).format(items);
+
+/** « Yasmine doit encore être placée… », « Yasmine et Adam doivent encore être placés… ». */
+function placementReminder(children: MembershipApplication["children"]): string {
+  if (children.length === 0) return "";
+  const names = listFr(children.map((c) => c.firstName));
+  const girlsOnly = children.every((c) => c.gender === "femme");
+  return children.length === 1
+    ? ` ${names} doit encore être ${girlsOnly ? "placée" : "placé"} dans une classe par l’école.`
+    : ` ${names} doivent encore être ${girlsOnly ? "placées" : "placés"} dans une classe par l’école.`;
+}
+
 function Members() {
   const persons = usePortal((s) => s.persons);
   const applications = usePortal((s) => s.applications);
+  const approve = usePortal((s) => s.approveApplication);
+  const reject = usePortal((s) => s.rejectApplication);
+  const [announce, setAnnounce] = useState("");
+  const [refusing, setRefusing] = useState<MembershipApplication | null>(null);
+  const announceRef = useRef<HTMLParagraphElement>(null);
+
+  /** The card (and the button that was pressed) is gone: land on the confirmation. */
+  const confirmDone = (message: string) => {
+    flushSync(() => {
+      setRefusing(null);
+      setAnnounce(message);
+    });
+    announceRef.current?.focus();
+  };
+
+  const onApprove = (a: MembershipApplication) => {
+    approve(a.id);
+    confirmDone(
+      `Adhésion ${ofName(`${a.firstName} ${a.lastName}`)} validée : ${agree(a.gender, "il", "elle")} figure maintenant parmi les membres actifs.${placementReminder(a.children)}`,
+    );
+  };
+
+  const onReject = () => {
+    if (!refusing) return;
+    reject(refusing.id);
+    confirmDone(
+      `Demande ${ofName(`${refusing.firstName} ${refusing.lastName}`)} refusée : elle est retirée de la liste.`,
+    );
+  };
+
   return (
-    <div className="space-y-5">
-      {applications.length > 0 && (
-        <Panel eyebrow="Depuis le site" title="Nouvelles demandes d’adhésion">
-          <ul className="divide-y divide-white/[0.06]">
-            {applications.map((a) => (
-              <li
-                key={a.id}
-                className="flex flex-wrap items-center justify-between gap-2 py-3 text-[14px]"
-              >
-                <span className="text-on-dark">
-                  {a.firstName} {a.lastName} · {a.email}
-                  {a.children.length > 0 && (
-                    <span className="text-on-dark-muted"> · {a.children.length} enfant(s)</span>
-                  )}
-                </span>
-                <Pill tone="warn">À valider</Pill>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-      )}
-      <Panel eyebrow="Rôles et profils" title="Membres">
-        <div className="-mx-5 overflow-x-auto px-5 md:mx-0 md:px-0">
-          <table className="w-full min-w-[640px] text-left text-[14px]">
-            <thead className="text-on-dark-faint text-[12.5px]">
-              <tr className="border-b border-white/[0.08]">
-                <th scope="col" className="py-2 font-medium">
-                  Nom
-                </th>
-                <th scope="col" className="py-2 font-medium">
-                  Rôle
-                </th>
-                <th scope="col" className="py-2 font-medium">
-                  Profils cumulés
-                </th>
-                <th scope="col" className="py-2 font-medium">
-                  Adhésion
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {persons.map((p) => (
-                <tr key={p.id} className="border-b border-white/[0.05]">
-                  <td className="text-on-dark py-2.5">
-                    {p.firstName} {p.lastName}
-                  </td>
-                  <td className="text-on-dark-muted py-2.5">{ROLE_LABELS[p.role]}</td>
-                  <td className="py-2.5">
-                    <span className="flex flex-wrap gap-1">
-                      {p.profiles.length ? (
-                        p.profiles.map((pr) => <Pill key={pr}>{PROFILE_LABELS[pr]}</Pill>)
-                      ) : (
-                        <span className="text-on-dark-faint">—</span>
-                      )}
-                    </span>
-                  </td>
-                  <td className="py-2.5">
-                    <Pill tone={MEMBERSHIP_TONE[p.membership]}>
-                      {MEMBERSHIP_LABEL[p.membership]}
-                    </Pill>
-                  </td>
-                </tr>
+    <>
+      {/* Outside the spaced stack: empty, the live region must not add a gap. */}
+      <p
+        ref={announceRef}
+        tabIndex={-1}
+        role="status"
+        className={cn(
+          "focus-visible:outline-gold-light focus-visible:outline-2 focus-visible:outline-offset-2",
+          announce &&
+            "mb-5 flex gap-2.5 rounded-[12px] border border-[#1c7d5b]/45 bg-[#1c7d5b]/15 px-3.5 py-3 text-[14px] leading-relaxed text-[#bfeedb]",
+        )}
+      >
+        {announce && <CheckIcon width={18} height={18} className="mt-0.5 shrink-0" />}
+        {announce}
+      </p>
+      <div className="space-y-5">
+        {applications.length > 0 && (
+          <Panel eyebrow="Depuis le site" title="Nouvelles demandes d’adhésion">
+            <ul className="divide-y divide-white/[0.06]">
+              {applications.map((a) => (
+                <ApplicationItem
+                  key={a.id}
+                  application={a}
+                  onApprove={() => onApprove(a)}
+                  onReject={() => setRefusing(a)}
+                />
               ))}
-            </tbody>
-          </table>
+            </ul>
+            <DemoNote>
+              La validation crée le compte de l’adulte (membre actif, rôle parent). Les enfants sont
+              ajoutés par l’école quand elle les place dans une classe ; les inscriptions demandées
+              restent indiquées ici pour le secrétariat.
+            </DemoNote>
+          </Panel>
+        )}
+        <Dialog
+          open={refusing !== null}
+          onClose={() => setRefusing(null)}
+          title="Refuser cette demande ?"
+          footer={
+            <>
+              <button type="button" onClick={() => setRefusing(null)} className={btn("ghost")}>
+                Annuler
+              </button>
+              <button type="button" onClick={onReject} className={btn("danger")}>
+                Refuser la demande
+              </button>
+            </>
+          }
+        >
+          {refusing && (
+            <p className="text-on-dark-muted text-[15px] leading-relaxed">
+              La demande d’adhésion{" "}
+              <span className="text-on-dark">
+                {ofName(`${refusing.firstName} ${refusing.lastName}`)}
+              </span>
+              {refusing.children.length > 0 &&
+                ` (avec ${refusing.children.length === 1 ? "1 enfant" : `${refusing.children.length} enfants`})`}{" "}
+              sera retirée de la liste. Aucun compte n’est créé ; la décision reste inscrite au
+              journal d’audit.
+            </p>
+          )}
+        </Dialog>
+        <Panel eyebrow="Rôles et profils" title="Membres">
+          <div className="-mx-5 overflow-x-auto px-5 md:mx-0 md:px-0">
+            <table className="w-full min-w-[640px] text-left text-[14px]">
+              <thead className="text-on-dark-faint text-[12.5px]">
+                <tr className="border-b border-white/[0.08]">
+                  <th scope="col" className="py-2 font-medium">
+                    Nom
+                  </th>
+                  <th scope="col" className="py-2 font-medium">
+                    Rôle
+                  </th>
+                  <th scope="col" className="py-2 font-medium">
+                    Profils cumulés
+                  </th>
+                  <th scope="col" className="py-2 font-medium">
+                    Adhésion
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {persons.map((p) => (
+                  <tr key={p.id} className="border-b border-white/[0.05]">
+                    <td className="text-on-dark py-2.5">
+                      {p.firstName} {p.lastName}
+                    </td>
+                    <td className="text-on-dark-muted py-2.5">{ROLE_LABELS[p.role]}</td>
+                    <td className="py-2.5">
+                      <span className="flex flex-wrap gap-1">
+                        {p.profiles.length ? (
+                          p.profiles.map((pr) => <Pill key={pr}>{PROFILE_LABELS[pr]}</Pill>)
+                        ) : (
+                          <span className="text-on-dark-faint">—</span>
+                        )}
+                      </span>
+                    </td>
+                    <td className="py-2.5">
+                      <Pill tone={MEMBERSHIP_TONE[p.membership]}>
+                        {MEMBERSHIP_LABEL[p.membership]}
+                      </Pill>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DemoNote>
+            Une même personne peut cumuler plusieurs profils (par exemple parent, comptable et
+            membre de la Shura) sans perdre son accès parental. Chaque permission est vérifiée côté
+            serveur (§3).
+          </DemoNote>
+        </Panel>
+      </div>
+    </>
+  );
+}
+
+/** One application: the adult and each child, with the activities each one asked for. */
+function ApplicationItem({
+  application: a,
+  onApprove,
+  onReject,
+}: {
+  application: MembershipApplication;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  const activities = usePortal((s) => s.activities);
+  const fullName = `${a.firstName} ${a.lastName}`;
+  const titleId = `adh-${a.id}`;
+  const today = todayIso();
+  const childLines = a.enrolments.filter((e) => e.person !== APPLICANT_SELF);
+  const people = [
+    {
+      key: "adulte",
+      name: fullName,
+      detail: `Adulte · ${a.gender === "femme" ? "femme" : "homme"}`,
+      activityIds: a.enrolments.find((e) => e.person === APPLICANT_SELF)?.activityIds ?? [],
+    },
+    ...a.children.map((c, i) => ({
+      key: `enfant-${i}`,
+      name: c.firstName,
+      detail: `${c.gender === "femme" ? "Fille" : "Garçon"} · ${ageOn(c.birthDate, today)} ans`,
+      activityIds: childLines[i]?.activityIds ?? [],
+    })),
+  ];
+
+  return (
+    <li className="py-4 first:pt-0">
+      <article aria-labelledby={titleId}>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 id={titleId} className="text-on-dark text-[16px] font-medium">
+              {fullName}
+            </h3>
+            <p className="text-on-dark-muted mt-0.5 text-[13px] [overflow-wrap:anywhere]">
+              {a.email} · <span className="nums">{a.phone}</span> · reçue le{" "}
+              <time dateTime={a.at}>{formatDateTime(a.at)}</time>
+            </p>
+          </div>
+          <Pill tone="warn">À valider</Pill>
         </div>
-        <DemoNote>
-          Une même personne peut cumuler plusieurs profils (par exemple parent, comptable et membre
-          de la Shura) sans perdre son accès parental. Chaque permission est vérifiée côté serveur
-          (§3).
-        </DemoNote>
-      </Panel>
-    </div>
+
+        <h4 className="sr-only">Personnes et activités demandées</h4>
+        <ul className="mt-3 grid gap-2">
+          {people.map((p) => {
+            const requested = p.activityIds.flatMap((id) => {
+              const act = activities.find((x) => x.id === id);
+              return act ? [act] : [];
+            });
+            return (
+              <li key={p.key} className="rounded-[12px] bg-white/[0.03] px-3.5 py-2.5">
+                <p className="text-on-dark text-[14.5px]">
+                  <span className="font-medium">{p.name}</span>
+                  <span className="text-on-dark-faint"> · {p.detail}</span>
+                </p>
+                {requested.length > 0 ? (
+                  <ul
+                    className="mt-1.5 flex flex-wrap gap-1.5"
+                    aria-label={`Activités de ${p.name}`}
+                  >
+                    {requested.map((act) => (
+                      <li key={act.id}>
+                        <Pill tone={isWaitlisted(act) ? "warn" : "gold"}>
+                          {act.title}
+                          {isWaitlisted(act) && " — liste d’attente"}
+                        </Pill>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-on-dark-faint mt-0.5 text-[13px]">Aucune activité demandée.</p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={onApprove} className={btn("gold", "sm")}>
+            Valider l’adhésion <span className="sr-only">{ofName(fullName)}</span>
+          </button>
+          <button type="button" onClick={onReject} className={btn("ghost", "sm")}>
+            Refuser <span className="sr-only">la demande {ofName(fullName)}</span>
+          </button>
+        </div>
+      </article>
+    </li>
   );
 }

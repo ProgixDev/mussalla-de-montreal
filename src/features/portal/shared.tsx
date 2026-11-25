@@ -36,6 +36,10 @@ export function usePersonName() {
   };
 }
 
+/** « de Fatima », « d’Amina », « d’un membre » — French elision before a vowel. */
+export const ofName = (name: string) =>
+  /^[aeiouàâäéèêëîïôöùûü]/i.test(name) ? `d’${name}` : `de ${name}`;
+
 export interface SpaceProps {
   /** The signed-in person (for the child persona, a synthetic Person built from the child). */
   me: Person;

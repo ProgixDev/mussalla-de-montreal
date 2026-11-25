@@ -2,7 +2,7 @@
 
 import { usePortal } from "@/lib/portal/store";
 import { usePortalReady } from "@/lib/portal/hydrator";
-import { isAlertActive, isOnScreen } from "@/core/portal/derive";
+import { canDisplayOnScreen, isAlertActive } from "@/core/portal/derive";
 import type { CentreEvent, Congratulation } from "@/core/portal/types";
 import { formatDateTime, formatDayLong } from "@/lib/format";
 import { Star8 } from "@/components/ui/star";
@@ -35,7 +35,9 @@ export function FelicitationsPage() {
   const children = usePortal((s) => s.children);
   const classes = usePortal((s) => s.classes);
   const now = new Date().toISOString();
-  const live = ready ? congrats.filter((c) => isOnScreen(c, now)).slice(0, 2) : [];
+  const live = ready
+    ? congrats.filter((c) => canDisplayOnScreen(c, now, children)).slice(0, 2)
+    : [];
 
   return (
     <div className="w-full">

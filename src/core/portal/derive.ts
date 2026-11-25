@@ -7,7 +7,9 @@ import type {
   Activity,
   Assessment,
   CashCountSession,
+  Child,
   Congratulation,
+  ConsentType,
   EmergencyAlert,
   ExternalCollection,
   FinancialTransaction,
@@ -148,7 +150,36 @@ export function weightedScore(
   return weights === 0 ? null : Math.round((weighted / weights) * 100);
 }
 
+// ── consents (§4.2) ──────────────────────────────────────────────────────
+/**
+ * The parent's CURRENT decision for one consent. Consents are append-only (newest first),
+ * so the latest line wins; no line at all means "not granted".
+ */
+export function hasConsent(child: Pick<Child, "consents">, type: ConsentType): boolean {
+  let latest: Child["consents"][number] | undefined;
+  for (const c of child.consents) {
+    if (c.type === type && (!latest || c.at > latest.at)) latest = c;
+  }
+  return latest?.granted ?? false;
+}
+
 // ── alerts & screens (§4.4, §4.5) ────────────────────────────────────────
+/**
+ * May this congratulation be on a SCREEN right now? Approved, inside its window, and —
+ * for a child — the parent's LATEST screen-display decision still allows it. Withdrawing
+ * consent takes the child off the TV immediately, not at the end of the window (§4.2).
+ */
+export function canDisplayOnScreen(
+  c: Congratulation,
+  now: string,
+  children: Pick<Child, "id" | "consents">[],
+): boolean {
+  if (!isOnScreen(c, now)) return false;
+  if (!c.childId) return true;
+  const child = children.find((k) => k.id === c.childId);
+  return child ? hasConsent(child, "screen_display") : false;
+}
+
 /** An expired alert is never shown nor sent again (§4.4 « Expiration »). */
 export const isAlertActive = (alert: EmergencyAlert, now: string): boolean =>
   alert.publishedAt <= now && now < alert.expiresAt;

@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   absenceWarning,
+  canDisplayOnScreen,
   ageOn,
   checkEligibility,
   collectionReady,
   countTotals,
+  hasConsent,
   isAlertActive,
   isOnScreen,
   isRubricValid,
@@ -17,6 +19,7 @@ import {
   alertHistory,
   assessments,
   cashCount,
+  children,
   congratulations,
   externalCollection,
   meetings,
@@ -85,6 +88,28 @@ describe("points and rubrics (§4.3)", () => {
   });
 });
 
+describe("consents (§4.2)", () => {
+  it("reads the parent's latest decision — consents are append-only", () => {
+    const maryam = children.find((c) => c.id === "child-maryam")!;
+    expect(hasConsent(maryam, "screen_display")).toBe(false);
+    const granted = {
+      consents: [
+        { type: "screen_display" as const, granted: true, at: "2026-11-20" },
+        ...maryam.consents,
+      ],
+    };
+    expect(hasConsent(granted, "screen_display")).toBe(true);
+    const revoked = {
+      consents: [
+        { type: "screen_display" as const, granted: false, at: "2026-11-24" },
+        ...granted.consents,
+      ],
+    };
+    expect(hasConsent(revoked, "screen_display")).toBe(false);
+    expect(hasConsent({ consents: [] }, "homework_photo")).toBe(false);
+  });
+});
+
 describe("alerts and screens (§4.4, §4.5)", () => {
   it("never shows an expired alert", () => {
     expect(isAlertActive(alertHistory[0]!, "2026-11-25T12:00:00Z")).toBe(false);
@@ -132,5 +157,33 @@ describe("governance (§4.6)", () => {
       flagged: true,
     });
     expect(absenceWarning(meetings, "p-leila", 3, 4).flagged).toBe(false);
+  });
+});
+
+describe("screen display respects the latest consent (§4.2, §4.5)", () => {
+  it("takes a child off the screens as soon as the parent withdraws consent", () => {
+    const now = "2026-11-25T12:00:00Z";
+    const yasmine = congratulations.find((c) => c.id === "cg-1")!;
+    const kids = [
+      {
+        id: "child-yasmine",
+        consents: [{ type: "screen_display" as const, granted: true, at: "2026-09-02" }],
+      },
+    ];
+    expect(canDisplayOnScreen(yasmine, now, kids)).toBe(true);
+    const withdrawn = [
+      {
+        id: "child-yasmine",
+        consents: [
+          { type: "screen_display" as const, granted: false, at: "2026-11-20" },
+          ...kids[0]!.consents,
+        ],
+      },
+    ];
+    expect(canDisplayOnScreen(yasmine, now, withdrawn)).toBe(false);
+  });
+  it("always lets a group congratulation through", () => {
+    const group = congratulations.find((c) => c.id === "cg-2")!;
+    expect(canDisplayOnScreen(group, "2026-11-25T12:00:00Z", [])).toBe(true);
   });
 });

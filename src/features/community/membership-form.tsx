@@ -6,7 +6,7 @@ import { flushSync } from "react-dom";
 import { cn } from "@/lib/utils";
 import { ageOn, checkEligibility, isWaitlisted } from "@/core/portal/derive";
 import type { Activity, Gender } from "@/core/portal/types";
-import { usePortal } from "@/lib/portal/store";
+import { APPLICANT_SELF, usePortal } from "@/lib/portal/store";
 import { Field, Panel, Pill, btn, describedBy, inputCls } from "@/components/portal/kit";
 import { ArrowRightIcon, LockIcon, PlusIcon, XIcon } from "@/components/ui/icons";
 import { ChoiceGroup, ConsentCheckbox, FinePrint, SuccessHeading, checkboxCls } from "./form-bits";
@@ -313,6 +313,13 @@ export function MembershipForm({ initialActivityId }: { initialActivityId?: stri
         .map((a) => ({ id: a.id, title: a.title, waitlist: isWaitlisted(a) })),
     }));
     const activityIds = [...new Set(lines.flatMap((l) => l.items.map((i) => i.id)))];
+    // One line per person — the adult first, then each child in the order of `children`
+    // (a child's first name is required, so shortName IS that name) — so the secretariat
+    // sees who asked for what.
+    const enrolments = people.map((p, i) => ({
+      person: p.who === "adult" ? APPLICANT_SELF : p.shortName,
+      activityIds: lines[i]?.items.map((item) => item.id) ?? [],
+    }));
 
     applyMembership({
       firstName: values.firstName.trim(),
@@ -321,6 +328,7 @@ export function MembershipForm({ initialActivityId }: { initialActivityId?: stri
       phone: values.phone.trim(),
       gender,
       children,
+      enrolments,
       activityIds,
     });
     setSent({

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { StickerKind } from "@/core/portal/types";
 
@@ -291,61 +292,40 @@ export function StarAvatar({
   );
 }
 
-/** Sticker badges a teacher can award — drawn, gold, no emoji. */
+/**
+ * Sticker badges a teacher can award — toy-like 3D renders (design/stickers/stickers.py),
+ * the same set everywhere: teacher picker, parent badges, the child's album, the TV.
+ * Decorative: the label is always given as text next to it.
+ */
 export function Sticker({
   kind,
   size = 40,
   className,
+  locked = false,
 }: {
   kind: StickerKind;
   size?: number;
   className?: string;
+  /** Not earned yet: a soft silhouette (album). */
+  locked?: boolean;
 }) {
   return (
-    <svg
-      viewBox="0 0 48 48"
+    <Image
+      src={`/stickers/${kind}.webp`}
+      alt=""
+      aria-hidden="true"
       width={size}
       height={size}
-      aria-hidden="true"
-      className={cn("shrink-0 drop-shadow-[0_0_10px_rgba(236,217,160,0.35)]", className)}
-    >
-      <circle cx="24" cy="24" r="22" fill="#0f3b2b" stroke="#d9bd77" strokeWidth="1.5" />
-      <circle
-        cx="24"
-        cy="24"
-        r="18.5"
-        fill="none"
-        stroke="#d9bd77"
-        strokeOpacity="0.35"
-        strokeDasharray="0.01 2.6"
-        strokeLinecap="round"
-      />
-      <g fill="#ecd9a0" stroke="none">
-        {kind === "etoile" && (
-          <path d="M24 11 L26.7 19.5 L35.3 16.7 L30.6 24 L35.3 31.3 L26.7 28.5 L24 37 L21.3 28.5 L12.7 31.3 L17.4 24 L12.7 16.7 L21.3 19.5 Z" />
-        )}
-        {kind === "croissant" && (
-          <>
-            <path d="M28.5 13.5 A11 11 0 1 0 28.5 34.5 A8.6 8.6 0 1 1 28.5 13.5 Z" />
-            <path d="M33 19.5 l1.1 2.4 2.6.3-1.9 1.8.5 2.6-2.3-1.3-2.3 1.3.5-2.6-1.9-1.8 2.6-.3 Z" />
-          </>
-        )}
-        {kind === "livre" && (
-          <path
-            d="M13 16 C17 14.5 21 14.8 24 17 C27 14.8 31 14.5 35 16 L35 33 C31 31.5 27 31.8 24 34 C21 31.8 17 31.5 13 33 Z M24 17 L24 34"
-            stroke="#0f3b2b"
-            strokeWidth="1.2"
-          />
-        )}
-        {kind === "lanterne" && (
-          <path
-            d="M24 10 L24 13 M20 15 L28 15 L30 18 L18 18 Z M18.5 18.5 Q15.5 26 18.5 33 L29.5 33 Q32.5 26 29.5 18.5 Z M21 34 L27 34 L25.6 37.5 L22.4 37.5 Z"
-            stroke="#ecd9a0"
-            strokeWidth="1.2"
-          />
-        )}
-      </g>
-    </svg>
+      unoptimized
+      className={cn(
+        "shrink-0 select-none",
+        locked
+          ? "opacity-25 brightness-0 invert-[.35]"
+          : "drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)]",
+        className,
+      )}
+      draggable={false}
+    />
   );
 }
 

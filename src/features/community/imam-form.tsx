@@ -120,10 +120,20 @@ export function ImamQuestionForm() {
       return;
     }
     // In production the author comes from the signed-in session (§6.7), never from the form.
+    // Until then the typed name and the follow-up contact travel with the question so the
+    // imam knows whom to answer — both stay private (never shown outside the Imam space).
+    const contact =
+      values.followUp === "courriel"
+        ? values.email.trim()
+        : values.followUp === "telephone"
+          ? values.phone.trim()
+          : "";
     submitQuestion({
       authorId: "p-visiteur",
+      authorName: `${values.firstName.trim()} ${values.lastName.trim()}`,
       question: values.question.trim(),
       followUp: values.followUp,
+      ...(contact ? { contact } : {}),
     });
     setSent(values.followUp);
   };

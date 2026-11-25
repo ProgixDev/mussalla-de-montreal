@@ -16,7 +16,7 @@ import {
 import { CheckIcon, LockIcon } from "@/components/ui/icons";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { DemoNote, SpaceHeading, usePersonName, type SpaceProps } from "../shared";
+import { DemoNote, SpaceHeading, ofName, usePersonName, type SpaceProps } from "../shared";
 
 /**
  * Portail Imam (spec §4.9, §6.7) — private questions from members. Each question is seen
@@ -76,6 +76,29 @@ const CHANNEL_PHRASES: Record<Channel, string> = {
 const MIN_ANSWER = 40;
 
 const agree = (g: Gender, m: string, f: string) => (g === "femme" ? f : m);
+
+/** When the author has no record (public form) and typed no name either. */
+const UNKNOWN_AUTHOR = "un membre non identifié";
+
+/** Closes a sentence that ends on a name, without doubling the period of « Fatima Zahra B. ». */
+const endSentence = (s: string) => (s.endsWith(".") ? s : `${s}.`);
+
+/**
+ * Who will be contacted, and how. A member's gender is on record; a visitor's is not, so
+ * their sentence is epicene rather than guessed.
+ */
+function contactSentence(author: string, g: Gender | null, channel: Channel): string {
+  const how = CHANNEL_PHRASES[channel];
+  return g
+    ? `${author} sera ${agree(g, "contacté", "contactée")} ${how}, le canal ${agree(g, "qu’il", "qu’elle")} a choisi.`
+    : `La prise de contact avec ${author} se fera ${how}, le canal choisi.`;
+}
+
+const CONTACT_HREF: Record<Channel, (contact: string) => string | null> = {
+  portail: () => null,
+  courriel: (c) => `mailto:${c}`,
+  telephone: (c) => `tel:${c.replace(/[^\d+]/g, "")}`,
+};
 
 export function ImamSpace({ me }: SpaceProps) {
   const questions = usePortal((s) => s.imamQuestions);
@@ -185,8 +208,11 @@ function QuestionCard({
   const articleRef = useRef<HTMLElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
 
-  const author = name(q.authorId);
-  const g: Gender = persons.find((p) => p.id === q.authorId)?.gender ?? "homme";
+  // A known member is named from their record; a visitor by the name they typed (§4.9).
+  const person = persons.find((p) => p.id === q.authorId);
+  const author = person ? name(q.authorId) : q.authorName?.trim() || UNKNOWN_AUTHOR;
+  const g: Gender | null = person?.gender ?? null;
+  const contactHref = q.contact ? CONTACT_HREF[q.followUp](q.contact) : null;
   const status = STATUS_META[q.status];
   const titleId = `q-${q.id}-title`;
   const answerId = `q-${q.id}-answer`;
@@ -208,16 +234,14 @@ function QuestionCard({
     if (!left) (actionsRef.current?.querySelector("button") ?? articleRef.current)?.focus();
   };
 
-  const take = () => change("assigned", `Vous avez pris en charge la question de ${author}.`);
+  const take = () =>
+    change("assigned", endSentence(`Vous avez pris en charge la question ${ofName(author)}`));
   const requestContact = () =>
-    change(
-      "contact_requested",
-      `Contact demandé : ${author} sera ${agree(g, "contacté", "contactée")} ${CHANNEL_PHRASES[q.followUp]}, le canal ${agree(g, "qu’il", "qu’elle")} a choisi.`,
-    );
+    change("contact_requested", `Contact demandé. ${contactSentence(author, g, q.followUp)}`);
   const close = () =>
     change(
       "closed",
-      `La question de ${author} est close. Elle reste conservée selon la politique de rétention du centre.`,
+      `La question ${ofName(author)} est close. Elle reste conservée selon la politique de rétention du centre.`,
     );
 
   function submitAnswer(e: FormEvent<HTMLFormElement>) {
@@ -234,7 +258,7 @@ function QuestionCard({
     }
     change(
       "answered",
-      `Réponse envoyée à ${author}. ${agree(g, "Il", "Elle")} recevra une notification ${CHANNEL_PHRASES[q.followUp]}, sans le contenu de la réponse.`,
+      `${endSentence(`Réponse envoyée à ${author}`)} ${g ? `${agree(g, "Il", "Elle")} recevra une notification` : "Une notification partira"} ${CHANNEL_PHRASES[q.followUp]}, sans le contenu de la réponse.`,
       trimmed,
     );
   }
@@ -257,11 +281,26 @@ function QuestionCard({
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 id={titleId} className="font-display text-on-dark text-[20px] leading-tight">
-            Question de {author}
+            Question {ofName(author)}
           </h2>
           <p className="text-on-dark-muted mt-1 text-[13px]">
             <time dateTime={q.at}>{formatDateTime(q.at)}</time> · Suivi :{" "}
             {CHANNEL_LABELS[q.followUp]}
+            {q.contact && (
+              <>
+                {" · "}
+                {contactHref ? (
+                  <a
+                    href={contactHref}
+                    className="text-gold-light break-all underline-offset-4 hover:underline"
+                  >
+                    {q.contact}
+                  </a>
+                ) : (
+                  <span className="text-on-dark break-all">{q.contact}</span>
+                )}
+              </>
+            )}
           </p>
         </div>
         <Pill tone={status.tone}>{status.label}</Pill>
@@ -280,8 +319,7 @@ function QuestionCard({
 
       {q.status === "contact_requested" && (
         <p className="text-on-dark-muted mt-4 rounded-[12px] border border-[#d9a23d]/35 bg-[#d9a23d]/10 px-4 py-3 text-[14px] leading-relaxed">
-          {author} sera {agree(g, "contacté", "contactée")} {CHANNEL_PHRASES[q.followUp]}, le canal{" "}
-          {agree(g, "qu’il", "qu’elle")} a choisi. Vous pourrez ensuite consigner une réponse
+          {contactSentence(author, g, q.followUp)} Vous pourrez ensuite consigner une réponse
           écrite.
         </p>
       )}
@@ -297,7 +335,7 @@ function QuestionCard({
             label="Votre réponse"
             required
             error={error}
-            hint={`Réponse privée : ${agree(g, "seul", "seule")} ${author} pourra la lire. Au moins ${MIN_ANSWER} caractères.`}
+            hint={`Réponse privée : ${g ? `${agree(g, "seul", "seule")} ${author} pourra la lire` : `elle ne sera lisible que par ${author}`}. Au moins ${MIN_ANSWER} caractères.`}
           >
             <textarea
               {...describedBy(answerId, error, true)}

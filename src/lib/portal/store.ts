@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
+import { hasConsent } from "@/core/portal/derive";
 import { getPortalSeed, type PortalSeed } from "@/core/portal/seed";
 import type {
   AttendanceRecord,
@@ -37,6 +38,9 @@ import type {
  * HTML (seed) and the first client render always match.
  */
 
+/** « Vous » in an enrolment line = the adult who filled the application. */
+export const APPLICANT_SELF = "Vous";
+
 export interface MembershipApplication {
   id: string;
   firstName: string;
@@ -45,9 +49,34 @@ export interface MembershipApplication {
   phone: string;
   gender: "femme" | "homme";
   children: { firstName: string; birthDate: string; gender: "femme" | "homme" }[];
+  /**
+   * Who would join what, one line per person of the household: `person` is
+   * APPLICANT_SELF for the adult, the child's first name otherwise (same order as
+   * `children`). Only activities the person was eligible for are kept.
+   */
+  enrolments: { person: string; activityIds: string[] }[];
+  /** Every requested activity, all people together — kept for compatibility. */
   activityIds: string[];
   status: "pending";
   at: string;
+}
+
+/**
+ * Applications saved before `enrolments` existed (persisted v1) only kept the flat
+ * `activityIds`: give them to the adult, and an empty line to each child.
+ */
+function withEnrolments(
+  a: Omit<MembershipApplication, "enrolments"> & {
+    enrolments?: MembershipApplication["enrolments"];
+  },
+): MembershipApplication {
+  return {
+    ...a,
+    enrolments: a.enrolments ?? [
+      { person: APPLICANT_SELF, activityIds: a.activityIds },
+      ...a.children.map((c) => ({ person: c.firstName, activityIds: [] })),
+    ],
+  };
 }
 
 export interface VolunteerApplication {
@@ -62,6 +91,8 @@ export interface VolunteerApplication {
 
 type Data = PortalSeed & {
   attendance: AttendanceRecord[];
+  /** A child ticked « J’ai révisé ! » on a homework (never touches scores). */
+  homeworkDone: { childId: string; homeworkId: string; at: string }[];
   applications: MembershipApplication[];
   volunteerApplications: VolunteerApplication[];
 };
@@ -85,6 +116,7 @@ export interface PortalState extends Data {
     early?: boolean,
   ) => void;
   addHomework: (hw: Omit<Homework, "id" | "postedAt">) => void;
+  toggleHomeworkDone: (childId: string, homeworkId: string) => void;
   addMessage: (msg: Omit<PortalMessage, "id" | "at">) => void;
   setConsent: (childId: string, type: string, granted: boolean) => void;
   setRubricCategories: (categories: RubricCategory[]) => void;
@@ -102,6 +134,8 @@ export interface PortalState extends Data {
   // events
   addEvent: (e: Omit<CentreEvent, "id">) => void;
   decideEvent: (id: string, publish: boolean) => void;
+  /** An event sent back to draft goes back to the administration (draft → submitted). */
+  resubmitEvent: (id: string) => void;
 
   // finance
   updateCashCount: (patch: Partial<CashCountSession>) => void;
@@ -137,6 +171,14 @@ export interface PortalState extends Data {
 
   // membership
   applyMembership: (a: Omit<MembershipApplication, "id" | "status" | "at">) => void;
+  /**
+   * Validates an application: the adult becomes an active member (role parent, no
+   * functional profile) and the application leaves the queue. Children are NOT created
+   * here — the school places each child in a class.
+   */
+  approveApplication: (id: string) => void;
+  /** Refuses an application: it leaves the queue (the audit log keeps the decision). */
+  rejectApplication: (id: string) => void;
 }
 
 const uid = (p: string) =>
@@ -146,6 +188,7 @@ const nowIso = () => new Date().toISOString();
 const initialData = (): Data => ({
   ...getPortalSeed(),
   attendance: [],
+  homeworkDone: [],
   applications: [],
   volunteerApplications: [],
 });
@@ -222,6 +265,14 @@ export const usePortal = create<PortalState>()(
         })),
       addHomework: (hw) =>
         set((s) => ({ homework: [{ ...hw, id: uid("hw"), postedAt: nowIso() }, ...s.homework] })),
+      toggleHomeworkDone: (childId, homeworkId) =>
+        set((s) => ({
+          homeworkDone: s.homeworkDone.some(
+            (d) => d.childId === childId && d.homeworkId === homeworkId,
+          )
+            ? s.homeworkDone.filter((d) => !(d.childId === childId && d.homeworkId === homeworkId))
+            : [{ childId, homeworkId, at: nowIso() }, ...s.homeworkDone],
+        })),
       addMessage: (msg) =>
         set((s) => ({ messages: [{ ...msg, id: uid("m"), at: nowIso() }, ...s.messages] })),
       // Consents are append-only (§4.2): a change adds a new line, history stays.
@@ -247,11 +298,18 @@ export const usePortal = create<PortalState>()(
           congratulations: [{ ...c, id: uid("cg"), status: "submitted" }, ...s.congratulations],
         })),
       decideCongratulation: (id, approve, by) =>
-        set((s) => ({
-          congratulations: s.congratulations.map((c) =>
-            c.id === id ? { ...c, status: approve ? "approved" : "rejected", approvedBy: by } : c,
-          ),
-        })),
+        set((s) => {
+          // A child goes on the screens only with the parent's screen consent (§4.2, §4.5):
+          // enforced here too, like the server will, not only by a disabled button.
+          const childId = s.congratulations.find((c) => c.id === id)?.childId;
+          const child = childId ? s.children.find((c) => c.id === childId) : undefined;
+          if (approve && childId && !(child && hasConsent(child, "screen_display"))) return {};
+          return {
+            congratulations: s.congratulations.map((c) =>
+              c.id === id ? { ...c, status: approve ? "approved" : "rejected", approvedBy: by } : c,
+            ),
+          };
+        }),
       pairScreen: (id) =>
         set((s) => ({
           screens: s.screens.map((sc) =>
@@ -283,6 +341,12 @@ export const usePortal = create<PortalState>()(
           events: publish
             ? s.events.map((e) => (e.id === id ? { ...e, status: "published" } : e))
             : s.events.map((e) => (e.id === id ? { ...e, status: "draft" } : e)),
+        })),
+      resubmitEvent: (id) =>
+        set((s) => ({
+          events: s.events.map((e) =>
+            e.id === id && e.status === "draft" ? { ...e, status: "submitted" } : e,
+          ),
         })),
 
       updateCashCount: (patch) => set((s) => ({ cashCount: { ...s.cashCount, ...patch } })),
@@ -423,10 +487,42 @@ export const usePortal = create<PortalState>()(
             ...s.applications,
           ],
         })),
+      approveApplication: (id) =>
+        set((s) => {
+          const a = s.applications.find((x) => x.id === id);
+          if (!a) return {};
+          return {
+            persons: [
+              ...s.persons,
+              {
+                id: uid("p"),
+                firstName: a.firstName,
+                lastName: a.lastName,
+                gender: a.gender,
+                role: "parent",
+                profiles: [],
+                membership: "active",
+                email: a.email,
+                phone: a.phone,
+              },
+            ],
+            applications: s.applications.filter((x) => x.id !== id),
+          };
+        }),
+      rejectApplication: (id) =>
+        set((s) => ({ applications: s.applications.filter((x) => x.id !== id) })),
     }),
     {
       name: "mussalla-portail-demo",
-      version: 1,
+      // v2: membership applications carry per-person `enrolments`.
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = (persisted ?? {}) as Partial<PortalState>;
+        if (version < 2 && Array.isArray(state.applications)) {
+          state.applications = state.applications.map(withEnrolments);
+        }
+        return state;
+      },
       storage: createJSONStorage(() => safeStorage),
       skipHydration: true,
       partialize: ({ hydrated: _h, ...rest }) => {
